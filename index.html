@@ -298,6 +298,33 @@ table.tbl tr.row-strong td { background: #EEF3F8; font-weight: 600; border-top: 
 table.tbl tr.row-strong:hover td { background: #E8EFF6; }
 table.tbl td.lbl { color: var(--ink-2); }
 table.tbl td.lbl small { display: block; color: var(--ink-4); font-size: 11px; }
+.be-strip {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--line); margin-top: 16px;
+}
+.be-strip__cell { padding: 16px 22px 6px; border-right: 1px solid var(--line); min-width: 0; }
+.be-strip__cell:last-child { border-right: 0; padding-right: 0; }
+.be-strip__cell:first-child { padding-left: 0; }
+.be-strip__k {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-4);
+}
+.be-strip__v { font-family: var(--f-mono); font-size: 21px; color: var(--navy-900); margin: 7px 0 5px; letter-spacing: -.01em; }
+.be-strip__v.none { font-size: 15px; color: var(--ink-3); }
+.be-strip__n { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+
+.be-now {
+  margin-top: 16px; padding: 13px 15px; border-radius: var(--r-sm);
+  background: #EDF3F8; border-left: 3px solid var(--navy-600);
+  font-size: 12.5px; color: var(--ink-2); line-height: 1.55;
+}
+.be-now__k {
+  display: block; font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-4); margin-bottom: 4px;
+}
+
+table.tbl--roomy th, table.tbl--roomy td { padding-top: 11px; padding-bottom: 11px; }
+
 .tbl-foot { font-size: 11.5px; color: var(--ink-4); padding: 10px 13px; border-top: 1px solid var(--line); background: var(--surface-2); }
 
 /* -------------------------------------------------------------- charts --- */
@@ -480,6 +507,13 @@ table.tbl td.lbl small { display: block; color: var(--ink-4); font-size: 11px; }
   .page { padding-top: 26px; padding-bottom: 56px; }
 }
 
+@media (max-width: 760px) {
+  .be-strip { grid-template-columns: 1fr; }
+  .be-strip__cell { border-right: 0; border-bottom: 1px dashed var(--line); padding: 14px 0 12px; }
+  .be-strip__cell:last-child { border-bottom: 0; padding-bottom: 0; }
+  .be-strip__cell:first-child { padding-left: 0; }
+}
+
 @media (max-width: 720px) {
   /* card headers stack so titles are not squeezed by inline badges */
   .card__head { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -489,6 +523,33 @@ table.tbl td.lbl small { display: block; color: var(--ink-4); font-size: 11px; }
 
 @media (max-width: 560px) {
   .field__row, .field__row--3 { grid-template-columns: 1fr; }
+  .col-hide-sm { display: none; }
+  table.tbl { font-size: 12.5px; }
+  table.tbl th, table.tbl td { padding-left: 9px; padding-right: 9px; }
+
+  /* stacked rows so no column is cut off on a phone */
+  table.tbl--roomy { min-width: 0; }
+  table.tbl--roomy thead { display: none; }
+  table.tbl--roomy tbody { display: block; }
+  table.tbl--roomy tr {
+    display: block; padding: 9px 0; border-bottom: 1px solid var(--line);
+    background: transparent !important;
+  }
+  table.tbl--roomy td.col-hide-sm { display: none; }
+  table.tbl--roomy tr:last-child { border-bottom: 0; }
+  table.tbl--roomy td {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+    border: 0; padding: 2px 0; white-space: normal; text-align: right;
+  }
+  table.tbl--roomy td::before {
+    content: attr(data-label);
+    font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-4); text-align: left;
+  }
+  table.tbl--roomy td.be-yr {
+    justify-content: flex-start; text-align: left; font-weight: 600;
+    color: var(--navy-800); font-size: 13px; padding-bottom: 6px;
+  }
   .tabs-inline { gap: 5px; }
   .tabs-inline button { font-size: 12px; padding: 5px 10px; }
 }
@@ -2708,99 +2769,102 @@ function BreakEvenPage(props) {
   return html`<div className="wrap page">
     <${SecHead} label="Step 3 of 3 \u00b7 Break-even"
       title="At what deployment length does the answer change?"
-      sub="Each alternative is re-evaluated at every study period from 0.5 to 15 years on the same assumptions. The crossover points are where two EUAC curves intersect."
+      sub="Each alternative is re-evaluated at every half-year from 0.5 to 15 years on identical assumptions. The crossover points are where two EUAC curves intersect."
       right=${html`<button className="btn btn--line btn--sm" onClick=${function () { props.go('sensitivity'); }}>Sensitivity analysis</button>`} />
 
-    <${Card} style=${{ marginBottom: '18px' }}>
-      <div className="card__head"><div><div className="kicker">Break-even chart</div><h3>EUAC against study period</h3></div>
-        <div className="pill-row">
-          ${pairs.map(function (p) {
-            return html`<${Badge} key=${p.id} tone=${p.v.length ? 'win' : 'muted'}>
-              ${p.a} vs ${p.b}: ${p.v.length ? fx(p.v[0], 2) + ' yr' : 'no crossover'}<//>`;
-          })}
+    <${Card} style=${{ marginBottom: '20px' }}>
+      <div className="card__head" style=${{ marginBottom: '6px' }}>
+        <div>
+          <div className="kicker">Break-even chart</div>
+          <h3>EUAC against study period</h3>
+          <p className="small dim" style=${{ margin: '5px 0 0' }}>Lower is cheaper. Where two lines cross, the cheaper route changes.</p>
         </div>
       </div>
-      <${ChartBox} config=${durationConfig(be)} height=${340} regKey="be" />
+      <${ChartBox} config=${durationConfig(be)} height=${380} regKey="be" />
+
+      <div className="be-strip">
+        ${pairs.map(function (p) {
+          return html`<div key=${p.id} className="be-strip__cell">
+            <div className="be-strip__k">${p.a} vs ${p.b}</div>
+            <div className=${'be-strip__v' + (p.v.length ? '' : ' none')}>${p.v.length ? fx(p.v[0], 2) + ' yr' : 'No crossover'}</div>
+            <div className="be-strip__n">
+              ${p.v.length
+                ? p.a + ' costs more below this period, ' + p.b.toLowerCase() + ' above it.'
+                : 'The curves never cross in this range \u2014 one option dominates on cost throughout.'}
+            </div>
+          </div>`;
+        })}
+      </div>
     <//>
 
-    <div className="grid g3" style=${{ marginBottom: '18px' }}>
-      ${pairs.map(function (p) {
-        return html`<div key=${p.id} className="card">
-          <div className="stat__k">${p.a} vs ${p.b}</div>
-          <div className="stat__v" style=${{ fontSize: '22px' }}>${p.v.length ? fx(p.v[0], 2) + ' yr' : 'None'}</div>
-          <div className="stat__m">
-            ${p.v.length
-              ? 'Below ' + fx(p.v[0], 2) + ' years the ' + p.a.toLowerCase() + ' curve is the more expensive of the two; above it, the ' + p.b.toLowerCase() + ' curve is.'
-              : 'The two curves do not cross anywhere in the 0.5 to 15 year range tested. One option dominates the other on cost throughout, so duration alone will not change the choice between them.'}
-          </div>
-        </div>`;
-      })}
-    </div>
-
-    <${Card} style=${{ marginBottom: '18px' }}>
-      <div className="card__head"><div><div className="kicker">Interpretation</div><h3>What the crossover means</h3></div></div>
-      <p className="small" style=${{ color: 'var(--ink-2)' }}>
-        ${beNarrative(segs)}
-      </p>
-      <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
-        The curve for buying is not a straight line: it falls steeply at first because the fixed purchase price is
-        spread over more years, then flattens as maintenance escalation offsets the spreading effect
-        ${inp.buy.replacement ? ', with a step at each economic-life boundary where a replacement machine is bought' : ''}.
-        Rental and lease curves are almost linear because their cost is proportional to time.
-      </p>
-    <//>
-
-    <div className="grid g2">
-      <${Card} className="card--flush">
-        <div style=${{ padding: '18px 20px 6px' }}><div className="kicker" style=${{ fontFamily: 'var(--f-mono)', fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-4)' }}>Table</div>
-          <h3 style=${{ marginTop: '4px' }}>EUAC at selected durations</h3></div>
-        <div className="tbl-wrap">
-          <table className="tbl">
-            <thead><tr><th>Study period</th><th>Buy</th><th>Lease</th><th>Rent</th><th>Lowest</th></tr></thead>
-            <tbody>
-              ${tableYears.map(function (y) {
-                var idx = be.years.indexOf(+y.toFixed(2));
-                if (idx < 0) idx = 0;
-                var vals = [be.buy[idx], be.lease[idx], be.rent[idx]];
-                var mn = Math.min.apply(null, vals);
-                return html`<tr key=${y}>
-                  <td className="n">${fx(y, 1) + ' yr'}</td>
-                  ${vals.map(function (v, j) {
-                    return html`<td key=${j} className=${'n' + (v === mn ? ' best' : '')}>${INR(v)}</td>`;
-                  })}
-                  <td><${Badge} tone=${['buy', 'lease', 'rent'][vals.indexOf(mn)]}>${ALTNAME(['buy', 'lease', 'rent'][vals.indexOf(mn)])}<//></td>
-                </tr>`;
-              })}
-            </tbody>
-          </table>
+    <div className="grid g2" style=${{ marginBottom: '20px' }}>
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">Interpretation</div><h3>What the crossover means</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>${beNarrative(segs)}</p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          ${'The buying curve is not a straight line: it falls steeply at first because the fixed purchase price is spread over more years, then flattens as maintenance escalation offsets the spreading effect' +
+            (inp.buy.replacement ? ', with a step at each economic-life boundary where a replacement machine is bought' : '') +
+            '. Rental and lease curves are almost linear because their cost is proportional to time.'}
+        </p>
+        <div className="be-now">
+          <span className="be-now__k">Where your analysis sits</span>
+          ${'At a study period of ' + durText(res.n) + ', ' + ALTNAME(res.best) + ' is the cheapest route at ' + INR(res.bestEuac) + ' per year \u2014 ' + INR(res.savings) + ' below ' + ALTNAME(res.secondBest) + '.'}
         </div>
-        <div className="tbl-foot">Values recomputed by the engine at each duration \u2014 not interpolated.</div>
       <//>
 
       <${Card}>
         <div className="card__head"><div><div className="kicker">Method</div><h3>Assumptions behind the sweep</h3></div></div>
-        <div className="assump" style=${{ gridTemplateColumns: '1fr' }}>
+        <div className="assump" style=${{ gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px' }}>
           <div className="assump__item">
             <h5>Rental duration tracks the study period</h5>
-            <p>Hire is assumed to run for the whole study period at the entered rate, so the rental curve rises in step with duration.</p>
+            <p>Hire runs for the whole period at the entered rate, so the rental curve rises with duration.</p>
           </div>
           <div className="assump__item">
             <h5>Lease renewal</h5>
-            <p>Where the study period exceeds the ${Math.round(inp.lease.termMonths)}-month lease term, the lease is renewed on the same terms with a fresh advance payment and deposit cycle.</p>
+            <p>Beyond the ${Math.round(inp.lease.termMonths)}-month term the lease renews on the same terms, with a fresh advance and deposit.</p>
           </div>
           <div className="assump__item">
             <h5>Economic life and replacement</h5>
             <p>${inp.buy.replacement
-              ? 'Replacement purchases are modelled at every ' + fx(inp.buy.economicLifeYears, 1) + '-year life boundary, each with its own residual.'
-              : 'The same machine is assumed to serve any duration tested, up to and beyond its ' + fx(inp.buy.economicLifeYears, 1) + '-year economic life. Enable replacement in the buy inputs for a more conservative curve.'}</p>
+              ? 'Replacement machines are bought at every ' + fx(inp.buy.economicLifeYears, 1) + '-year boundary, each with its own residual.'
+              : 'One machine serves any duration tested, up to and beyond its ' + fx(inp.buy.economicLifeYears, 1) + '-year life. Enable replacement for a more conservative curve.'}</p>
           </div>
           <div className="assump__item">
             <h5>Residual value</h5>
-            <p>Held at ${INR(inp.buy.resaleValue)} in every duration tested, treated as the recoverable amount at the end of the period. For very short periods a real machine would resell for more; that would only strengthen the case for buying.</p>
+            <p>Held at ${INR(inp.buy.resaleValue)} at every duration, as the amount recoverable at the end.</p>
           </div>
         </div>
       <//>
     </div>
+
+    <${Card} className="card--flush">
+      <div style=${{ padding: '20px 22px 8px' }}>
+        <div className="kicker" style=${{ fontFamily: 'var(--f-mono)', fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-4)' }}>Table</div>
+        <h3 style=${{ marginTop: '4px' }}>EUAC at selected durations</h3>
+      </div>
+      <div className="tbl-wrap">
+        <table className="tbl tbl--roomy">
+          <thead><tr><th>Study period</th><th>Buy</th><th>Lease</th><th>Rent</th><th className="col-hide-sm">Lowest</th></tr></thead>
+          <tbody>
+            ${tableYears.map(function (y) {
+              var idx = be.years.indexOf(+y.toFixed(2));
+              if (idx < 0) idx = 0;
+              var vals = [be.buy[idx], be.lease[idx], be.rent[idx]];
+              var mn = Math.min.apply(null, vals);
+              var win = ['buy', 'lease', 'rent'][vals.indexOf(mn)];
+              return html`<tr key=${y}>
+                <td className="n be-yr">${fx(y, 1) + ' yr'}</td>
+                ${vals.map(function (v, j) {
+                  return html`<td key=${j} data-label=${['Buy', 'Lease', 'Rent'][j]} className=${'n' + (v === mn ? ' best' : '')}>${INR(v)}</td>`;
+                })}
+                <td className="col-hide-sm"><${Badge} tone=${win}>${ALTNAME(win)}<//></td>
+              </tr>`;
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="tbl-foot">Values recomputed by the engine at each duration \u2014 not interpolated.</div>
+    <//>
   </div>`;
 }
 
