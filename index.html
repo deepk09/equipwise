@@ -598,6 +598,54 @@ table.tbl--roomy th, table.tbl--roomy td { padding-top: 11px; padding-bottom: 11
   .tabs-inline button { font-size: 12px; padding: 5px 10px; }
 }
 
+
+/* ------------------------------------------------- equipment tab + formulas */
+.row-actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.row-actions .btn { padding: 5px 9px; font-size: 11.5px; }
+.row-actions .scn__del:hover { color: var(--red); border-color: #D86A62; }
+
+.fx-live {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid var(--line); margin-top: 4px;
+}
+.fx-live > div { padding: 16px 18px 4px; border-right: 1px solid var(--line); min-width: 0; }
+.fx-live > div:last-child { border-right: 0; padding-right: 0; }
+.fx-live > div:first-child { padding-left: 0; }
+.fx-live__k { font-family: var(--f-mono); font-size: 11px; letter-spacing: .04em; color: var(--ink-4); }
+.fx-live__v { font-family: var(--f-mono); font-size: 19px; color: var(--navy-900); margin: 6px 0 3px; letter-spacing: -.01em; }
+.fx-live__n { font-size: 11.5px; color: var(--ink-3); line-height: 1.4; }
+
+.fx-table { border-top: 1px solid var(--line); }
+.fx-row {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--line); align-items: baseline;
+}
+.fx-row:last-child { border-bottom: 0; }
+.fx-row__name { font-size: 13px; color: var(--ink); font-weight: 500; }
+.fx-sym {
+  display: inline-block; margin-left: 8px; font-family: var(--f-mono); font-size: 10.5px;
+  color: var(--navy-700); background: #EDF3F8; border-radius: 3px; padding: 1px 5px;
+}
+.fx-row__formula { font-size: 12.5px; color: var(--navy-900); overflow-wrap: anywhere; }
+.fx-row__use { font-size: 12px; color: var(--ink-3); line-height: 1.45; }
+
+.fx-list { margin: 8px 0 10px; padding-left: 18px; color: var(--ink-2); font-size: 12.5px; line-height: 1.6; }
+.fx-list li { margin-bottom: 6px; }
+
+.glossary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; margin: 0; }
+.glossary > div { padding: 10px 0; border-bottom: 1px dashed var(--line); min-width: 0; }
+.glossary dt { font-family: var(--f-mono); font-size: 11.5px; color: var(--navy-800); font-weight: 600; margin-bottom: 3px; }
+.glossary dd { margin: 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+
+@media (max-width: 980px) {
+  .fx-live { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fx-live > div { border-right: 0; border-bottom: 1px solid var(--line); padding: 13px 0 11px; }
+  .fx-live > div:nth-child(odd) { padding-right: 14px; }
+  .fx-row { grid-template-columns: 1fr; gap: 5px; }
+  .fx-row__formula { font-size: 12px; }
+  .glossary { grid-template-columns: 1fr; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
@@ -1955,6 +2003,7 @@ function Dashboard(props) {
           sub="Seven sample categories with illustrative cost structures, plus any machines you add yourself. Selecting a card loads its cost structure into the input form; you can then adjust every figure there."
           right=${html`<div className="pill-row">
             <button className="btn btn--line btn--sm" onClick=${props.onNew}>+ Add equipment</button>
+            <button className="btn btn--line btn--sm" onClick=${function () { props.go('equipment'); }}>Manage library</button>
             <button className="btn btn--line btn--sm" onClick=${function () { props.go('inputs'); }}>Open input form</button>
           </div>`} />
         <div className="grid g-auto">
@@ -3632,6 +3681,408 @@ function makePDF(state) {
   doc.save('EquipWise-EUAC-Report-' + (inp.project.name || 'analysis').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') + '.pdf');
 }
 
+/* ------------------------------------------------------- equipment tab --- */
+function EquipmentPage(props) {
+  var inputs = props.inputs, res = props.results;
+  var all = E.allEquipment();
+  var selectedId = inputs.project.equipmentId;
+
+  return html`<div className="wrap page">
+    <${SecHead} label="Library" title="Your equipment"
+      sub="Seven sample categories plus every machine you add. A record only seeds the input form \u2014 every figure stays editable on the Inputs page."
+      right=${html`<div className="pill-row">
+        <button className="btn btn--dark btn--sm" onClick=${props.onNew}>+ Add equipment</button>
+        <button className="btn btn--line btn--sm" onClick=${function () { props.go('inputs'); }}>Open input form</button>
+      </div>`} />
+
+    ${props.editing ? html`<div style=${{ marginBottom: '20px' }}>
+      <${EquipmentEditor} initial=${props.editing.record || null} isNew=${props.editing.mode === 'new'}
+        onSave=${props.onSave} onCancel=${props.onCancel} onDelete=${props.onDelete} />
+    </div>` : null}
+
+    <${Card} className="card--flush">
+      <div style=${{ padding: '20px 22px 10px' }}>
+        <div className="kicker" style=${{ fontFamily: 'var(--f-mono)', fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-4)' }}>
+          ${all.length + ' records \u00b7 ' + (all.length - E.EQUIPMENT.length) + ' yours'}
+        </div>
+        <h3 style=${{ marginTop: '4px' }}>Equipment records and their cost structure</h3>
+      </div>
+      <div className="tbl-wrap">
+        <table className="tbl tbl--stack tbl--roomy">
+          <thead>
+            <tr>
+              <th>Machine</th>
+              <th>Source</th>
+              <th>Price</th>
+              <th>Resale</th>
+              <th className="col-md-hide">Life</th>
+              <th className="col-md-hide">Maint. yr 1</th>
+              <th>Rent / month</th>
+              <th className="col-md-hide">Lease / month</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${all.map(function (q) {
+              var mine = !!q.custom;
+              var on = q.id === selectedId;
+              return html`<tr key=${q.id} className=${on ? 'row-strong' : ''}>
+                <td data-label="Machine">
+                  <div style=${{ display: 'flex', alignItems: 'center', gap: '9px', textAlign: 'left' }}>
+                    <span style=${{ color: 'var(--navy-700)', flexShrink: 0, display: 'inline-flex' }}>
+                      <${EquipIcon} id=${q.icon || q.id} />
+                    </span>
+                    <span style=${{ minWidth: 0 }}>
+                      <span style=${{ display: 'block', fontWeight: 500, fontSize: '13.5px' }}>${q.name}</span>
+                      <span className="tiny dim" style=${{ display: 'block' }}>${q.spec}</span>
+                    </span>
+                  </div>
+                </td>
+                <td data-label="Source">
+                  ${mine ? html`<${Badge} tone="warn">Yours<//>` : html`<${Badge} tone="muted">Sample<//>`}
+                </td>
+                <td className="n" data-label="Price">${INR(q.price)}</td>
+                <td className="n" data-label="Resale">${INR(q.resale || 0)}</td>
+                <td className="n col-md-hide" data-label="Life">${fx(q.life, 0) + ' yr'}</td>
+                <td className="n col-md-hide" data-label="Maint. yr 1">${INR(q.maint || 0)}</td>
+                <td className="n" data-label="Rent / month">${INR(q.rentMonth)}</td>
+                <td className="n col-md-hide" data-label="Lease / month">${INR(q.leaseMonth || 0)}</td>
+                <td data-label="Action">
+                  <div className="row-actions">
+                    <button className="btn btn--line btn--sm" onClick=${function () { props.pickEquipment(q.id); }}>
+                      ${on ? 'In use' : 'Use'}
+                    </button>
+                    ${mine ? html`<button className="btn btn--line btn--sm" onClick=${function () { props.onEdit(q); }}>Edit</button>` : null}
+                    ${mine ? html`<button className="btn btn--line btn--sm scn__del" onClick=${function () { props.onDelete(q); }}>Del</button>` : null}
+                  </div>
+                </td>
+              </tr>`;
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="tbl-foot">
+        Records live in this browser's local storage. Selecting one loads its cost structure into the analysis;
+        the seven samples are fixed reference values and cannot be edited.
+      </div>
+    <//>
+
+    <div className="note note--info">
+      <b>What a record does.</b> Choosing a machine copies its price, resale value, economic life, maintenance,
+      insurance, storage, operating hours, rental rate and lease payment into the Inputs page. The engine then works
+      entirely from those inputs, so you can change any of them without touching the record. Add a record when you
+      have a quotation you will use more than once.
+    </div>
+  </div>`;
+}
+
+/* ------------------------------------------------------- formulas tab --- */
+function FormulaRow(props) {
+  return html`<div className="fx-row">
+    <div className="fx-row__name">
+      <span>${props.name}</span>
+      ${props.sym ? html`<code className="fx-sym">${props.sym}</code>` : null}
+    </div>
+    <div className="fx-row__formula mono">${props.formula}</div>
+    <div className="fx-row__use">${props.use}</div>
+  </div>`;
+}
+
+function FormulasPage(props) {
+  var inp = props.inputs, res = props.results;
+  var i = res.i, n = res.n;
+  var apf = E.apf(i, n), af = E.af(i, n), paf = E.paf(i, n), pf = E.pfv(i, n);
+  var im = E.periodRate(i, 12);
+  var b = inp.buy, e = inp.econ;
+
+  return html`<div className="wrap page">
+    <${SecHead} label="Reference" title="Formulas and concepts used"
+      sub="Every number on the Results, Break-even and Sensitivity tabs comes from the expressions on this page. Factor values shown are computed live from your current inputs." />
+
+    <${Card} className="card--tint">
+      <div className="card__head">
+        <div><div className="kicker">Live factors</div><h3>At i = ${pctf(i * 100, 2)} and n = ${durText(n)}</h3></div>
+        <${Badge} tone="buy">recomputed on every input change<//>
+      </div>
+      <div className="fx-live">
+        <div><div className="fx-live__k">(A/P, i, n)</div><div className="fx-live__v">${kfactor(apf, 6)}</div><div className="fx-live__n">capital recovery</div></div>
+        <div><div className="fx-live__k">(A/F, i, n)</div><div className="fx-live__v">${kfactor(af, 6)}</div><div className="fx-live__n">sinking fund</div></div>
+        <div><div className="fx-live__k">(P/A, i, n)</div><div className="fx-live__v">${kfactor(paf, 6)}</div><div className="fx-live__n">uniform series present worth</div></div>
+        <div><div className="fx-live__k">(P/F, i, n)</div><div className="fx-live__v">${kfactor(pf, 6)}</div><div className="fx-live__n">single payment</div></div>
+        <div><div className="fx-live__k">i\u2098 monthly</div><div className="fx-live__v">${kfactor(im * 100, 4)}%</div><div className="fx-live__n">for lease and hire flows</div></div>
+      </div>
+    <//>
+
+    <div className="section">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">01</div><h3>What equivalent uniform annual worth measures</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          Equivalent Uniform Annual Worth converts a stream of cash flows occurring at different times into a single
+          equal amount at the end of every year of a study period, at a stated interest rate. It answers one question:
+          what constant annual figure is financially identical to this whole pattern of payments?
+        </p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          When the flows are costs, the result is the <b>Equivalent Uniform Annual Cost (EUAC)</b> \u2014 the cost-oriented
+          counterpart of EUAW. The two are the same computation with opposite signs: EUAW is used when benefits are
+          modelled, EUAC when only costs are. This model is cost-only, so every alternative is ranked by EUAC and the
+          lowest wins. Because all three routes are annualised over an identical study period, they become directly
+          comparable even though one needs a large payment now and another needs small payments for years.
+        </p>
+      <//>
+    </div>
+
+    <div className="section">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">02</div><h3>The interest factors</h3></div></div>
+        <div className="fx-table">
+          <${FormulaRow} name="Single payment present worth" sym="(P/F, i, n)" formula="(1 + i)^\u2212n" use="Brings one amount at year t back to today." />
+          <${FormulaRow} name="Single payment compound amount" sym="(F/P, i, n)" formula="(1 + i)^n" use="Moves one amount forward to year n." />
+          <${FormulaRow} name="Uniform series present worth" sym="(P/A, i, n)" formula="[(1 + i)^n \u2212 1] / [i(1 + i)^n]" use="Value today of an equal amount repeated n times." />
+          <${FormulaRow} name="Capital recovery" sym="(A/P, i, n)" formula="i(1 + i)^n / [(1 + i)^n \u2212 1]" use="Spreads a present amount into an equal annual amount. This is the annualising step." />
+          <${FormulaRow} name="Sinking fund" sym="(A/F, i, n)" formula="i / [(1 + i)^n \u2212 1]" use="Annual deposit needed to accumulate a future amount." />
+          <${FormulaRow} name="Uniform series compound amount" sym="(F/A, i, n)" formula="[(1 + i)^n \u2212 1] / i" use="Future value of an equal annual series." />
+        </div>
+        <div className="note note--info" style=${{ marginTop: '16px' }}>
+          <b>Two identities used throughout.</b> (A/P, i, n) = (A/F, i, n) + i, and (A/P, i, n) \u00d7 (P/A, i, n) = 1.
+          The engine's test suite asserts both.
+        </div>
+      <//>
+    </div>
+
+    <div className="grid g2">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">03</div><h3>Zero rate and sub-annual timing</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          At i = 0 every factor degenerates and the formulas divide by zero, so the engine handles that case separately:
+          (A/P, 0, n) = (A/F, 0, n) = 1/n and (P/A, 0, n) = n. The result is simply the arithmetic spread of the cost.
+        </p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          Monthly lease and hire payments are discounted at the <b>effective</b> monthly rate
+          i\u2098 = (1 + i)^(1/12) \u2212 1, never at i/12. Dividing the annual rate by twelve understates the true monthly
+          rate and would make twelve payments compound to less than one year at i. With i = ${pctf(i * 100, 1)},
+          i\u2098 = ${kfactor(im * 100, 4)}% per month.
+        </p>
+      <//>
+
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">04</div><h3>Why annualise a present worth</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          The textbook form EUAC = P(A/P, i, n) \u2212 S(A/F, i, n) + \u03a3 C\u209c(P/F, i, t)(A/P, i, n) applies the
+          capital recovery factor to each year's cost separately. It is correct, but it assumes every cost lands at a
+          year end and every year is a full year.
+        </p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          The engine instead discounts the complete ownership stream once and annualises the total:
+          <b>EUAC = PW \u00d7 (A/P, i, n)</b>. The two are algebraically identical for level annual costs, but the second
+          extends without special cases to escalating maintenance, part-year periods, replacement cycles and tax
+          shields. Where the analysis period is a whole number of years and costs do not escalate, both give the same
+          answer to six decimal places.
+        </p>
+      <//>
+    </div>
+
+    <div className="section">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">05</div><h3>Buying</h3></div></div>
+        <div className="formula">
+          <div>PW_B = P + <span className="op">\u03a3</span> C\u209c / (1 + i)^t \u2212 S / (1 + i)^n</div>
+          <div>EUAC_B = PW_B \u00d7 (A/P, i, n)</div>
+          <div style=${{ marginTop: '10px' }}><span className="cmt">// capital recovery, term by term</span></div>
+          <div>P(A/P, i, n) \u2212 S(A/F, i, n) = (P \u2212 S)(A/P, i, n) + S \u00b7 i</div>
+        </div>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginTop: '14px' }}>
+          P is the purchase price at t = 0, C\u209c is the maintenance, insurance, storage and any operating cost in year t,
+          and S is the resale value recovered at the end of the study period. Maintenance escalates at its own rate:
+          C\u209c = C\u2081(1 + g)^(t\u22121). Insurance, storage and operating costs escalate with the inflation input.
+        </p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          The second line is the same capital charge written three ways. It shows that ownership is not free even
+          after the machine is paid for: the residual value carries an opportunity cost of S \u00b7 i, the interest you
+          forgo by holding an asset instead of the cash.
+        </p>
+      <//>
+    </div>
+
+    <div className="grid g2">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">06</div><h3>Buying with financing</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          A loan is a way of paying, not an extra cost, so the engine offers two consistent bases and never mixes them:
+        </p>
+        <ul className="fx-list">
+          <li><b>Asset cost.</b> Discount P and S only. Repayments are ignored, because the interest rate is already
+            inside the discount rate.</li>
+          <li><b>Owner cash flow.</b> Discount the down payment at t = 0, each repayment, and the net sale proceeds.
+            The purchase price is <i>not</i> charged again.</li>
+        </ul>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          The check: when the loan rate equals the discount rate, both bases produce the same present worth. Charging
+          the price and the repayments together would double-count and is the most common error in student models.
+        </p>
+      <//>
+
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">07</div><h3>Replacement cycles</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          If the study period is longer than the machine's economic life, one machine cannot serve it. With replacement
+          enabled, each cycle is a full purchase-and-resale event:
+        </p>
+        <div className="formula" style=${{ fontSize: '11.5px' }}>
+          <div>PW = <span className="op">\u03a3</span><sub>k</sub> [ P/(1+i)^(kL) + <span className="op">\u03a3</span> C/(1+i)^t \u2212 S/(1+i)^(kL+L) ]</div>
+        </div>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginTop: '12px', marginBottom: 0 }}>
+          for cycles k = 0, 1, 2 \u2026 and life L. A part-year at the end of the period is prorated rather than
+          charged as a whole year.
+        </p>
+      <//>
+    </div>
+
+    <div className="grid g2">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">08</div><h3>Leasing</h3></div></div>
+        <div className="formula" style=${{ fontSize: '11.5px' }}>
+          <div>PW_L = <span className="op">\u03a3</span> rentals/(1+i\u2098)^m + advance + deposit</div>
+          <div>\u00a0\u00a0\u00a0\u00a0\u00a0\u2212 deposit/(1+i\u2098)^r + termination/(1+i\u2098)^M</div>
+          <div>EUAC_L = PW_L \u00d7 (A/P, i, n)</div>
+        </div>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginTop: '14px', marginBottom: 0 }}>
+          The refundable deposit goes out at signing and comes back at month r, so it is discounted twice at its own
+          dates. At a zero rate it nets to nothing; at a positive rate it costs the time value of the money tied up.
+          Rentals escalate by lease year, and where the study period outlasts the term the lease renews on the same
+          terms with a fresh advance and deposit.
+        </p>
+      <//>
+
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">09</div><h3>Renting</h3></div></div>
+        <div className="formula" style=${{ fontSize: '11.5px' }}>
+          <div>monthly = daily \u00d7 billable days, or weekly \u00d7 52/12</div>
+          <div>PW_R = <span className="op">\u03a3</span> (hire + overtime + downtime)/(1+i\u2098)^m</div>
+          <div>\u00a0\u00a0\u00a0\u00a0\u00a0+ mobilization + demobilization</div>
+          <div>EUAC_R = PW_R \u00d7 (A/P, i, n)</div>
+        </div>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginTop: '14px', marginBottom: 0 }}>
+          A minimum hire period longer than the deployment is charged as a shortfall at the end of the period, because
+          the commitment is real even if the machine is idle. The downtime allowance adds a percentage of rental cost
+          for replacement equipment. Fuel and operator are charged per productive hour only when the rate excludes them.
+        </p>
+      <//>
+    </div>
+
+    <div className="section">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">10</div><h3>The decision rule, and when it is valid</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          Compare the three EUACs over a common study period and choose the lowest \u2014 <b>provided all three deliver the
+          same service</b>. Same capacity, same availability, same condition. A rental that cannot guarantee the machine
+          on demand is not the same service as ownership, and the comparison would be invalid.
+        </p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          Costs that are identical under all three routes \u2014 site fuel where every rate includes it, operator wages,
+          general overhead \u2014 are excluded. They shift all three EUACs by the same amount, so they cannot change the
+          ranking, and including them only adds noise. Include a cost here only if it genuinely differs between the
+          options.
+        </p>
+      <//>
+    </div>
+
+    <div className="grid g2">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">11</div><h3>After-tax analysis</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          With tax enabled, recurring costs are reduced by the tax rate, since they are deductible:
+          C<sub>after</sub> = C(1 \u2212 t). Buying also earns a depreciation shield, a negative cost equal to
+          t \u00d7 (P \u2212 S)/L per year on a straight-line basis.
+        </p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          Interest deductibility is deliberately excluded: mixing it with the asset-cost basis would double-count, and
+          the financing view already reflects the loan. This is a simplified treatment, stated as such on the report.
+        </p>
+      <//>
+
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">12</div><h3>Inflation, real and nominal</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          The discount rate and the cash flows must be in the same terms. If costs are entered as today's rupees and
+          escalated at the inflation rate, the discount rate must be a nominal one. If you prefer a real analysis, set
+          inflation to zero and enter a real discount rate, then express escalation rates as real growth.
+        </p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          Mixing a real rate with nominal flows, or the reverse, is the second most common error after double-counting.
+        </p>
+      <//>
+    </div>
+
+    <div className="section">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">13</div><h3>Break-even and sensitivity</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          Break-even re-solves the whole model at every study period from 0.5 to 15 years, half-yearly, holding every
+          other assumption fixed. A crossover between two alternatives is found where the difference in their EUAC
+          changes sign, located by linear interpolation between the two surrounding points.
+        </p>
+        <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+          A crossover is not guaranteed. Where one route dominates at every duration the curves never meet, and the
+          page reports that rather than inventing an intersection. Sensitivity flexes one variable at a time over a
+          chosen range and records which alternative wins at each step; a change of winner means the recommendation is
+          not robust to that assumption.
+        </p>
+      <//>
+    </div>
+
+    <div className="section">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">14</div><h3>Worked example, with your current numbers</h3></div></div>
+        <p className="small" style=${{ color: 'var(--ink-2)' }}>
+          Buying the ${E.equipmentById(inp.project.equipmentId).name.toLowerCase()} at ${INR(b.price)}, keeping it for
+          ${durText(n)} and selling at ${INR(b.resaleValue)}.
+        </p>
+        <div className="tbl-wrap">
+          <table className="tbl">
+            <thead><tr><th>Step</th><th>Working</th><th>Amount</th></tr></thead>
+            <tbody>
+              <tr><td className="lbl">Purchase price at t = 0</td><td className="mono tiny">P</td><td className="n">${INR(b.price)}</td></tr>
+              <tr><td className="lbl">Maintenance, discounted</td><td className="mono tiny">\u03a3 C\u209c/(1+i)^t</td><td className="n">${INR(res.buy.pwParts.maint)}</td></tr>
+              <tr><td className="lbl">Insurance, registration, storage</td><td className="mono tiny">\u03a3/(1+i)^t</td><td className="n">${INR(res.buy.pwParts.own)}</td></tr>
+              <tr><td className="lbl">Fuel and operator</td><td className="mono tiny">\u03a3/(1+i)^t</td><td className="n">${INR(res.buy.pwParts.oper)}</td></tr>
+              <tr><td className="lbl">Less resale recovered</td><td className="mono tiny">\u2212S/(1+i)^n</td><td className="n">${INR(res.buy.pwParts.salvage)}</td></tr>
+              <tr className="row-strong"><td className="lbl">Present worth of ownership</td><td className="mono tiny">PW_B</td><td className="n">${INR(res.buy.pw)}</td></tr>
+              <tr><td className="lbl">Annualise</td><td className="mono tiny">\u00d7 (A/P, ${pctf(i * 100, 2)}, ${fx(n, 2)}) = \u00d7 ${kfactor(apf, 6)}</td><td className="n">${INR(res.buy.euac)}</td></tr>
+              <tr className="row-strong"><td className="lbl">Equivalent uniform annual cost</td><td className="mono tiny">EUAC_B</td><td className="n">${INR(res.buy.euac)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="tbl-foot">
+          ${'The same three steps give Lease at ' + INR(res.lease.euac) + ' and Rent at ' + INR(res.rent.euac) +
+            ' per year, so ' + ALTNAME(res.best) + ' is preferred by ' + INR(res.savings) + ' per year.'}
+        </div>
+      <//>
+    </div>
+
+    <div className="section">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">15</div><h3>Terms used</h3></div></div>
+        <dl className="glossary">
+          <div><dt>EUAC</dt><dd>Equivalent Uniform Annual Cost \u2014 a cost stream reduced to one equal amount per year.</dd></div>
+          <div><dt>EUAW</dt><dd>Equivalent Uniform Annual Worth \u2014 the same idea with benefits included; EUAC is its cost-only form.</dd></div>
+          <div><dt>MARR</dt><dd>Minimum Attractive Rate of Return \u2014 the discount rate used here, entered as an effective annual rate.</dd></div>
+          <div><dt>Present worth (PW)</dt><dd>All future amounts discounted to today at the discount rate.</dd></div>
+          <div><dt>Capital recovery</dt><dd>The annual charge that recovers a present amount, less any residual, over n years at rate i.</dd></div>
+          <div><dt>Sinking fund</dt><dd>The annual deposit that accumulates to a stated future amount at rate i.</dd></div>
+          <div><dt>Salvage / resale value</dt><dd>The amount recoverable when the equipment is sold at the end of the study period.</dd></div>
+          <div><dt>Economic life</dt><dd>The period over which the machine is economically worth keeping; drives the replacement cycle.</dd></div>
+          <div><dt>Escalation</dt><dd>Year-on-year growth of a cost, applied separately from the inflation rate.</dd></div>
+          <div><dt>Down payment</dt><dd>The cash paid at purchase; the remainder is financed by the loan.</dd></div>
+          <div><dt>Refundable deposit</dt><dd>Security money returned by the lessor at the end of the term \u2014 a timing cost, not a cost.</dd></div>
+          <div><dt>Mobilization</dt><dd>Cost of moving the machine to site; demobilization is the return trip.</dd></div>
+          <div><dt>Minimum hire</dt><dd>The shortest period a rental contract will bill, regardless of actual use.</dd></div>
+          <div><dt>Break-even period</dt><dd>The study period at which two alternatives have equal EUAC.</dd></div>
+        </dl>
+      <//>
+    </div>
+  </div>`;
+}
+
 /* ------------------------------------------------------------------ app */
 var LS_SCN = 'equipwise.scenarios.v1';
 var LS_META = 'equipwise.meta.v1';
@@ -3661,10 +4112,12 @@ function loadMeta() {
 
 var TABS = [
   { v: 'dashboard', t: 'Dashboard' },
+  { v: 'equipment', t: 'My equipment' },
   { v: 'inputs', t: 'Inputs' },
   { v: 'results', t: 'Results' },
   { v: 'breakeven', t: 'Break-even' },
   { v: 'sensitivity', t: 'Sensitivity' },
+  { v: 'formulas', t: 'Formulas' },
   { v: 'report', t: 'Report' }
 ];
 
@@ -3906,6 +4359,16 @@ function App() {
       onDelete=${deleteEquipment}
       onSave=${saveEquipment}
       onCancel=${function () { setEqEditing(null); }} />`;
+  } else if (tab === 'equipment') {
+    body = html`<${EquipmentPage} inputs=${inputs} results=${results} go=${setTab}
+      pickEquipment=${pickEquipment} editing=${eqEditing}
+      onNew=${function () { setEqEditing({ mode: 'new' }); }}
+      onEdit=${function (q) { setEqEditing({ mode: 'edit', record: q }); }}
+      onDelete=${deleteEquipment}
+      onSave=${saveEquipment}
+      onCancel=${function () { setEqEditing(null); }} />`;
+  } else if (tab === 'formulas') {
+    body = html`<${FormulasPage} inputs=${inputs} results=${results} />`;
   } else if (tab === 'inputs') {
     body = html`<${InputsPage} inputs=${inputs} update=${update} results=${results} validation=${validation}
       setDuration=${setDuration} setAnalysisYears=${setAnalysisYears} pickEquipment=${pickEquipment}
