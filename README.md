@@ -40,6 +40,10 @@ it locally — that path works identically, including the PDF report.
 1. **Dashboard** — pick one of seven equipment categories, or add your own
    machine (name, price, resale, life, maintenance, insurance, rental and lease
    rates). Your records are stored in the browser's local storage.
+   The same page holds the scenario manager: save the current assumptions under
+   a name, then load, rename, duplicate or delete runs. **Export JSON** writes
+   every scenario to a file and **Import JSON** reads one back, so scenarios can
+   move between devices or be handed in alongside the report.
 2. **Inputs** — project, economic parameters, and the buy / lease / rent
    assumptions. Validation messages appear as you type.
 3. **Results** — EUAC for each alternative, comparison table, six charts, the
