@@ -2007,7 +2007,6 @@ function Dashboard(props) {
           sub="Seven sample categories with illustrative cost structures, plus any machines you add yourself. Selecting a card loads its cost structure into the input form; you can then adjust every figure there."
           right=${html`<div className="pill-row">
             <button className="btn btn--line btn--sm" onClick=${props.onNew}>+ Add equipment</button>
-            <button className="btn btn--line btn--sm" onClick=${function () { props.go('equipment'); }}>Manage library</button>
             <button className="btn btn--line btn--sm" onClick=${function () { props.go('inputs'); }}>Open input form</button>
           </div>`} />
         <div className="grid g-auto">
@@ -3685,101 +3684,6 @@ function makePDF(state) {
   doc.save('EquipWise-EUAC-Report-' + (inp.project.name || 'analysis').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') + '.pdf');
 }
 
-/* ------------------------------------------------------- equipment tab --- */
-function EquipmentPage(props) {
-  var inputs = props.inputs, res = props.results;
-  var all = E.allEquipment();
-  var selectedId = inputs.project.equipmentId;
-
-  return html`<div className="wrap page">
-    <${SecHead} label="Library" title="Your equipment"
-      sub="Seven sample categories plus every machine you add. A record only seeds the input form \u2014 every figure stays editable on the Inputs page."
-      right=${html`<div className="pill-row">
-        <button className="btn btn--dark btn--sm" onClick=${props.onNew}>+ Add equipment</button>
-        <button className="btn btn--line btn--sm" onClick=${function () { props.go('inputs'); }}>Open input form</button>
-      </div>`} />
-
-    ${props.editing ? html`<div style=${{ marginBottom: '20px' }}>
-      <${EquipmentEditor} initial=${props.editing.record || null} isNew=${props.editing.mode === 'new'}
-        onSave=${props.onSave} onCancel=${props.onCancel} onDelete=${props.onDelete} />
-    </div>` : null}
-
-    <${Card} className="card--flush">
-      <div style=${{ padding: '20px 22px 10px' }}>
-        <div className="kicker" style=${{ fontFamily: 'var(--f-mono)', fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-4)' }}>
-          ${all.length + ' records \u00b7 ' + (all.length - E.EQUIPMENT.length) + ' yours'}
-        </div>
-        <h3 style=${{ marginTop: '4px' }}>Equipment records and their cost structure</h3>
-      </div>
-      <div className="tbl-wrap">
-        <table className="tbl tbl--stack tbl--roomy">
-          <thead>
-            <tr>
-              <th>Machine</th>
-              <th>Source</th>
-              <th>Price</th>
-              <th>Resale</th>
-              <th className="col-md-hide">Life</th>
-              <th className="col-md-hide">Maint. yr 1</th>
-              <th>Rent / month</th>
-              <th className="col-md-hide">Lease / month</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${all.map(function (q) {
-              var mine = !!q.custom;
-              var on = q.id === selectedId;
-              return html`<tr key=${q.id} className=${on ? 'row-strong' : ''}>
-                <td data-label="Machine">
-                  <div style=${{ display: 'flex', alignItems: 'center', gap: '9px', textAlign: 'left' }}>
-                    <span style=${{ color: 'var(--navy-700)', flexShrink: 0, display: 'inline-flex' }}>
-                      <${EquipIcon} id=${q.icon || q.id} />
-                    </span>
-                    <span style=${{ minWidth: 0 }}>
-                      <span style=${{ display: 'block', fontWeight: 500, fontSize: '13.5px' }}>${q.name}</span>
-                      <span className="tiny dim" style=${{ display: 'block' }}>${q.spec}</span>
-                    </span>
-                  </div>
-                </td>
-                <td data-label="Source">
-                  ${mine ? html`<${Badge} tone="warn">Yours<//>` : html`<${Badge} tone="muted">Sample<//>`}
-                </td>
-                <td className="n" data-label="Price">${INR(q.price)}</td>
-                <td className="n" data-label="Resale">${INR(q.resale || 0)}</td>
-                <td className="n col-md-hide" data-label="Life">${fx(q.life, 0) + ' yr'}</td>
-                <td className="n col-md-hide" data-label="Maint. yr 1">${INR(q.maint || 0)}</td>
-                <td className="n" data-label="Rent / month">${INR(q.rentMonth)}</td>
-                <td className="n col-md-hide" data-label="Lease / month">${INR(q.leaseMonth || 0)}</td>
-                <td data-label="Action">
-                  <div className="row-actions">
-                    <button className="btn btn--line btn--sm" onClick=${function () { props.pickEquipment(q.id); }}>
-                      ${on ? 'In use' : 'Use'}
-                    </button>
-                    ${mine ? html`<button className="btn btn--line btn--sm" onClick=${function () { props.onEdit(q); }}>Edit</button>` : null}
-                    ${mine ? html`<button className="btn btn--line btn--sm scn__del" onClick=${function () { props.onDelete(q); }}>Del</button>` : null}
-                  </div>
-                </td>
-              </tr>`;
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div className="tbl-foot">
-        Records live in this browser's local storage. Selecting one loads its cost structure into the analysis;
-        the seven samples are fixed reference values and cannot be edited.
-      </div>
-    <//>
-
-    <div className="note note--info">
-      <b>What a record does.</b> Choosing a machine copies its price, resale value, economic life, maintenance,
-      insurance, storage, operating hours, rental rate and lease payment into the Inputs page. The engine then works
-      entirely from those inputs, so you can change any of them without touching the record. Add a record when you
-      have a quotation you will use more than once.
-    </div>
-  </div>`;
-}
-
 /* ------------------------------------------------------- formulas tab --- */
 function FormulaRow(props) {
   return html`<div className="fx-row">
@@ -4116,7 +4020,6 @@ function loadMeta() {
 
 var TABS = [
   { v: 'dashboard', t: 'Dashboard' },
-  { v: 'equipment', t: 'My equipment' },
   { v: 'inputs', t: 'Inputs' },
   { v: 'results', t: 'Results' },
   { v: 'breakeven', t: 'Break-even' },
@@ -4358,14 +4261,6 @@ function App() {
       saveCurrentScenario=${saveCurrentScenario} renameScenario=${renameScenario}
       duplicateScenario=${duplicateScenario} exportScenarios=${exportScenarios} importScenarios=${importScenarios}
       editing=${eqEditing}
-      onNew=${function () { setEqEditing({ mode: 'new' }); }}
-      onEdit=${function (q) { setEqEditing({ mode: 'edit', record: q }); }}
-      onDelete=${deleteEquipment}
-      onSave=${saveEquipment}
-      onCancel=${function () { setEqEditing(null); }} />`;
-  } else if (tab === 'equipment') {
-    body = html`<${EquipmentPage} inputs=${inputs} results=${results} go=${setTab}
-      pickEquipment=${pickEquipment} editing=${eqEditing}
       onNew=${function () { setEqEditing({ mode: 'new' }); }}
       onEdit=${function (q) { setEqEditing({ mode: 'edit', record: q }); }}
       onDelete=${deleteEquipment}

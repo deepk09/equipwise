@@ -44,22 +44,18 @@ it locally — that path works identically, including the PDF report.
    a name, then load, rename, duplicate or delete runs. **Export JSON** writes
    every scenario to a file and **Import JSON** reads one back, so scenarios can
    move between devices or be handed in alongside the report.
-2. **My equipment** — the full library as a table: price, resale, life,
-   maintenance, rental and lease rates for every sample and every machine you
-   add, with add / edit / delete and a one-click "Use" to load a record into the
-   analysis.
-3. **Inputs** — project, economic parameters, and the buy / lease / rent
+2. **Inputs** — project, economic parameters, and the buy / lease / rent
    assumptions. Validation messages appear as you type.
-4. **Results** — EUAC for each alternative, comparison table, six charts, the
+3. **Results** — EUAC for each alternative, comparison table, six charts, the
    formulas with your numbers substituted, and the annual cash-flow tables.
-5. **Break-even** — the study period at which the preferred alternative changes,
+4. **Break-even** — the study period at which the preferred alternative changes,
    including the case where the curves never cross.
-6. **Sensitivity** — eight variables flexed one at a time, plus 3-, 12- and
+5. **Sensitivity** — eight variables flexed one at a time, plus 3-, 12- and
    36-month deployment scenarios.
-7. **Formulas** — every interest factor, the buy / lease / rent derivations, the
+6. **Formulas** — every interest factor, the buy / lease / rent derivations, the
    decision rule, tax and inflation conventions, and a worked example computed
    from your current inputs.
-8. **Report** — generates a multi-page PDF with inputs, formulas, cash-flow
+7. **Report** — generates a multi-page PDF with inputs, formulas, cash-flow
    tables, charts and a written recommendation.
 
 ## A note on the numbers
