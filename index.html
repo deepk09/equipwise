@@ -1,0 +1,3627 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EquipWise — Buy vs Lease vs Rent, EUAC Analysis for Construction Equipment</title>
+<meta name="description" content="Equivalent Uniform Annual Cost decision support for construction equipment acquisition: compare buying, leasing and renting on a common annual basis." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ==========================================================================
+   EquipWise — industrial construction-finance dashboard
+   ========================================================================== */
+
+:root {
+  --navy-950: #071426;
+  --navy-900: #0A1C31;
+  --navy-800: #0E2740;
+  --navy-700: #143454;
+  --navy-600: #1C4568;
+  --ink: #0E1F2E;
+  --ink-2: #35485A;
+  --ink-3: #66788A;
+  --ink-4: #94A3B0;
+
+  --paper: #F2F5F7;
+  --surface: #FFFFFF;
+  --surface-2: #F8FAFB;
+  --line: #E2E8ED;
+  --line-2: #D2DBE3;
+
+  --yellow: #E8A317;
+  --yellow-soft: #FCEFD2;
+  --yellow-line: #F3D79A;
+  --teal: #2E7D8F;
+  --teal-soft: #E2F0F3;
+  --green: #1F7A4D;
+  --green-soft: #E2F2EA;
+  --red: #B3261E;
+  --red-soft: #FBE7E5;
+
+  --buy: #143454;
+  --lease: #D99413;
+  --rent: #2E7D8F;
+
+  --r-sm: 6px;
+  --r: 10px;
+  --r-lg: 14px;
+  --shadow-1: 0 1px 2px rgba(10, 28, 49, .06), 0 1px 3px rgba(10, 28, 49, .04);
+  --shadow-2: 0 4px 12px rgba(10, 28, 49, .07), 0 1px 3px rgba(10, 28, 49, .05);
+  --shadow-3: 0 18px 40px -18px rgba(10, 28, 49, .35);
+
+  --f-head: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--f-body);
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+  line-height: 1.55;
+}
+h1, h2, h3, h4 { font-family: var(--f-head); font-weight: 600; letter-spacing: -.015em; margin: 0; color: var(--navy-900); }
+p { margin: 0 0 .7em; }
+a { color: var(--navy-700); }
+button { font-family: inherit; cursor: pointer; }
+input, select { font-family: inherit; font-size: 14px; }
+::selection { background: var(--yellow-soft); }
+
+.wrap { max-width: 1320px; margin: 0 auto; padding: 0 22px; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.dim { color: var(--ink-3); }
+.small { font-size: 12.5px; }
+.tiny { font-size: 11.5px; }
+.nowrap { white-space: nowrap; }
+
+/* ------------------------------------------------------------ top bar --- */
+.topbar {
+  background: var(--navy-900);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: sticky; top: 0; z-index: 60;
+}
+.topbar__inner {
+  max-width: 1320px; margin: 0 auto; padding: 0 22px;
+  height: 62px; display: flex; align-items: center; gap: 26px;
+}
+.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; flex-shrink: 0; }
+.brand__mark { width: 30px; height: 30px; display: block; }
+.brand__name {
+  font-family: var(--f-head); font-size: 19px; font-weight: 700; color: #fff;
+  letter-spacing: -.02em; line-height: 1;
+}
+.brand__name span { color: var(--yellow); }
+.brand__sub {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .16em;
+  color: rgba(255,255,255,.45); text-transform: uppercase; margin-top: 3px;
+}
+.nav { display: flex; gap: 2px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav button {
+  background: transparent; border: 0; color: rgba(255,255,255,.62);
+  padding: 8px 13px; border-radius: 7px; font-size: 13.5px; font-weight: 500;
+  white-space: nowrap; transition: background .15s, color .15s;
+}
+.nav button:hover { color: #fff; background: rgba(255,255,255,.07); }
+.nav button.on { color: var(--navy-950); background: var(--yellow); font-weight: 600; }
+.topbar__chip {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em;
+  color: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.18);
+  padding: 4px 8px; border-radius: 5px; flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------- hero --- */
+.hero {
+  background:
+    radial-gradient(1000px 340px at 88% -20%, rgba(232,163,23,.20), transparent 70%),
+    linear-gradient(168deg, var(--navy-900) 0%, var(--navy-800) 55%, var(--navy-700) 100%);
+  color: #fff; position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,.85), transparent 92%);
+  pointer-events: none;
+}
+.hero__inner { position: relative; padding-top: 54px; padding-bottom: 46px; display: grid; grid-template-columns: 1.55fr .95fr; gap: 46px; align-items: center; }
+.hero__eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--yellow); margin-bottom: 16px;
+}
+.hero__eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--yellow); }
+.hero h1 { color: #fff; font-size: clamp(30px, 4vw, 47px); line-height: 1.06; letter-spacing: -.03em; }
+.hero h1 em { font-style: normal; color: var(--yellow); }
+.hero__lede { color: rgba(255,255,255,.76); font-size: 16px; max-width: 54ch; margin-top: 16px; }
+.hero__cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; align-items: center; }
+
+.btn {
+  border: 0; border-radius: 8px; padding: 12px 20px; font-size: 14.5px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 9px; transition: transform .12s, box-shadow .18s, background .18s;
+}
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: var(--yellow); color: var(--navy-950); box-shadow: 0 6px 18px -8px rgba(232,163,23,.9); }
+.btn--primary:hover { background: #F5B229; }
+.btn--ghost { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.2); }
+.btn--ghost:hover { background: rgba(255,255,255,.14); }
+.btn--dark { background: var(--navy-800); color: #fff; }
+.btn--dark:hover { background: var(--navy-700); }
+.btn--line { background: #fff; color: var(--navy-800); border: 1px solid var(--line-2); }
+.btn--line:hover { border-color: var(--navy-600); }
+.btn--sm { padding: 8px 13px; font-size: 13px; border-radius: 7px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.hero__panel {
+  background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.13);
+  border-radius: var(--r-lg); padding: 18px 20px; backdrop-filter: blur(6px);
+}
+.hero__panel h4 {
+  color: rgba(255,255,255,.55); font-family: var(--f-mono); font-size: 10.5px;
+  letter-spacing: .16em; text-transform: uppercase; font-weight: 500; margin-bottom: 14px;
+}
+.hero__row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,.11); }
+.hero__row:last-child { border-bottom: 0; }
+.hero__row span:first-child { font-size: 13px; color: rgba(255,255,255,.7); }
+.hero__row span:last-child { font-family: var(--f-mono); font-size: 15px; color: #fff; font-weight: 500; }
+.hero__row.win span:last-child { color: var(--yellow); }
+
+/* -------------------------------------------------------------- layout --- */
+.page { padding-top: 34px; padding-bottom: 70px; }
+.section { margin-bottom: 34px; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap; }
+.sec-head h2 { font-size: 21px; }
+.sec-head p { margin: 5px 0 0; color: var(--ink-3); font-size: 13.5px; max-width: 78ch; }
+.label {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 9px;
+}
+.label::before { content: ""; width: 6px; height: 6px; background: var(--yellow); border-radius: 1px; }
+
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.g-auto { grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); }
+.g-auto-sm { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r); box-shadow: var(--shadow-1); padding: 20px;
+  min-width: 0;
+}
+.card--flush { padding: 0; overflow: hidden; }
+.card--tint { background: linear-gradient(180deg, #fff, var(--surface-2)); }
+.card h3 { font-size: 15.5px; }
+.card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.card__head .kicker { font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-4); }
+
+/* ---------------------------------------------------------- stat cards --- */
+.stat { position: relative; overflow: hidden; }
+.stat::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--line-2);
+}
+.stat--buy::after { background: var(--buy); }
+.stat--lease::after { background: var(--lease); }
+.stat--rent::after { background: var(--rent); }
+.stat--win::after { background: var(--green); }
+.stat__k { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-3); }
+.stat__v { font-family: var(--f-mono); font-size: 26px; font-weight: 500; letter-spacing: -.02em; margin: 8px 0 2px; color: var(--navy-900); }
+.stat__v small { font-size: 12px; color: var(--ink-4); font-weight: 400; letter-spacing: 0; }
+.stat__m { font-size: 12.5px; color: var(--ink-3); }
+.stat--win { background: linear-gradient(160deg, #fff, var(--green-soft)); border-color: #BFDCCB; }
+.stat--win .stat__v { color: var(--green); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px; font-family: var(--f-mono);
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px; border: 1px solid transparent; white-space: nowrap;
+}
+.badge--win { background: var(--green-soft); color: var(--green); border-color: #BFDCCB; }
+.badge--buy { background: #E7EDF4; color: var(--buy); }
+.badge--lease { background: var(--yellow-soft); color: #8A5F06; }
+.badge--rent { background: var(--teal-soft); color: var(--teal); }
+.badge--warn { background: var(--yellow-soft); color: #8A5F06; border-color: var(--yellow-line); }
+.badge--err { background: var(--red-soft); color: var(--red); border-color: #F1C7C3; }
+.badge--muted { background: var(--surface-2); color: var(--ink-3); border-color: var(--line); }
+
+/* ---------------------------------------------------------------- form --- */
+.field { display: block; margin-bottom: 13px; }
+.field__label {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  font-size: 12.5px; font-weight: 500; color: var(--ink-2); margin-bottom: 5px;
+}
+.field__label .u { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-4); letter-spacing: .04em; }
+.input, .select {
+  width: 100%; padding: 9px 11px; border: 1px solid var(--line-2); border-radius: var(--r-sm);
+  background: #fff; color: var(--ink); transition: border-color .15s, box-shadow .15s;
+}
+.input:hover, .select:hover { border-color: #B9C5D0; }
+.input:focus, .select:focus {
+  outline: none; border-color: var(--navy-600);
+  box-shadow: 0 0 0 3px rgba(20,52,84,.10);
+}
+.input.num { text-align: right; font-family: var(--f-mono); }
+.input.err { border-color: #D86A62; background: #FFF8F7; }
+.field__hint { font-size: 11.5px; color: var(--ink-4); margin-top: 4px; line-height: 1.4; }
+.field__row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field__row--3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.toggle { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; }
+.toggle input { appearance: none; width: 36px; height: 20px; border-radius: 20px; background: #CBD5DD; position: relative; transition: background .18s; flex-shrink: 0; margin-top: 1px; cursor: pointer; }
+.toggle input::after {
+  content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; top: 2px; left: 2px; transition: transform .18s; box-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
+.toggle input:checked { background: var(--navy-700); }
+.toggle input:checked::after { transform: translateX(16px); }
+.toggle__txt { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+.toggle__txt b { display: block; font-weight: 500; color: var(--ink); font-size: 13px; }
+.toggle__txt span { color: var(--ink-4); font-size: 11.5px; }
+
+.seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 7px; padding: 2px; gap: 2px; }
+.seg button {
+  border: 0; background: transparent; padding: 6px 11px; border-radius: 5px;
+  font-size: 12.5px; color: var(--ink-3); font-weight: 500;
+}
+.seg button.on { background: #fff; color: var(--navy-800); box-shadow: var(--shadow-1); font-weight: 600; }
+
+/* --------------------------------------------------------------- table --- */
+.tbl-wrap { overflow-x: auto; border-radius: var(--r); }
+table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 560px; }
+table.tbl th, table.tbl td { padding: 10px 13px; text-align: right; border-bottom: 1px solid var(--line); }
+table.tbl th:first-child, table.tbl td:first-child { text-align: left; }
+table.tbl thead th {
+  background: var(--navy-900); color: rgba(255,255,255,.85);
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em;
+  text-transform: uppercase; font-weight: 500; white-space: nowrap;
+  border-bottom: 0; position: sticky; top: 0;
+}
+table.tbl thead th.col-buy { color: #B9D2EA; }
+table.tbl thead th.col-lease { color: #F3CE86; }
+table.tbl thead th.col-rent { color: #9DD4DF; }
+table.tbl tbody tr:nth-child(even) { background: var(--surface-2); }
+table.tbl tbody tr:hover { background: #F0F5F9; }
+table.tbl td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.tbl td.best { color: var(--green); font-weight: 600; }
+table.tbl tr.row-strong td { background: #EEF3F8; font-weight: 600; border-top: 1px solid var(--line-2); }
+table.tbl tr.row-strong:hover td { background: #E8EFF6; }
+table.tbl td.lbl { color: var(--ink-2); }
+table.tbl td.lbl small { display: block; color: var(--ink-4); font-size: 11px; }
+.tbl-foot { font-size: 11.5px; color: var(--ink-4); padding: 10px 13px; border-top: 1px solid var(--line); background: var(--surface-2); }
+
+/* -------------------------------------------------------------- charts --- */
+.chartbox { position: relative; width: 100%; }
+.chartbox canvas { max-width: 100%; }
+.chart-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-3); }
+.chart-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+/* --------------------------------------------------------- equipment ----- */
+.equip {
+  display: flex; flex-direction: column; gap: 10px; padding: 16px; cursor: pointer; position: relative;
+  transition: border-color .16s, box-shadow .18s, transform .16s; text-align: left;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r);
+}
+.equip:hover { border-color: var(--navy-600); box-shadow: var(--shadow-2); transform: translateY(-2px); }
+.equip.on { border-color: var(--yellow); box-shadow: 0 0 0 2px var(--yellow-soft); }
+.equip__icon { width: 44px; height: 32px; color: var(--navy-700); }
+.equip__name { font-family: var(--f-head); font-size: 14.5px; font-weight: 600; color: var(--navy-900); }
+.equip__spec { font-size: 11.5px; color: var(--ink-4); line-height: 1.35; }
+.equip__price { font-family: var(--f-mono); font-size: 13px; color: var(--ink-2); border-top: 1px dashed var(--line); padding-top: 8px; margin-top: auto; }
+.equip__price b { color: var(--navy-800); font-weight: 600; }
+
+.equip__actions { position: absolute; top: 9px; right: 9px; display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
+.equip:hover .equip__actions, .equip:focus-within .equip__actions { opacity: 1; }
+.equip__actions button {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase;
+  padding: 3px 6px; border-radius: 4px; border: 1px solid var(--line-2); background: #fff;
+  color: var(--ink-3); line-height: 1.3;
+}
+.equip__actions button:hover { border-color: var(--navy-600); color: var(--navy-800); }
+.equip__actions button.del:hover { border-color: #D86A62; color: var(--red); background: var(--red-soft); }
+.equip__tag {
+  display: inline-block; font-family: var(--f-mono); font-size: 9px; letter-spacing: .1em;
+  text-transform: uppercase; color: #8A5F06; background: var(--yellow-soft);
+  border: 1px solid var(--yellow-line); border-radius: 3px; padding: 1px 5px; margin-left: 6px;
+  vertical-align: middle;
+}
+.equip--add {
+  border-style: dashed; align-items: center; justify-content: center; text-align: center;
+  color: var(--ink-3); min-height: 158px; background: transparent;
+}
+.equip--add:hover { color: var(--navy-800); background: #fff; }
+.equip--add .plus {
+  width: 34px; height: 34px; border-radius: 50%; border: 1px dashed var(--line-2);
+  display: flex; align-items: center; justify-content: center; font-size: 19px; color: var(--ink-4);
+  margin: 0 auto 4px;
+}
+.equip--add:hover .plus { border-color: var(--navy-600); color: var(--navy-700); }
+
+.equip-form { border-color: var(--yellow-line); background: linear-gradient(180deg, #fff, #FFFCF5); }
+.equip-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(172px, 1fr)); gap: 0 14px; }
+.equip-form__grid .field__label { min-height: 26px; align-items: flex-start; }
+.equip-form__grid .field__label .u { text-align: right; line-height: 1.25; max-width: 62%; }
+.equip-form__foot { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+@media (hover: none) {
+  .equip__actions { opacity: 1; }
+}
+
+/* ------------------------------------------------------------- misc ------ */
+.note {
+  border-left: 3px solid var(--yellow); background: var(--yellow-soft);
+  padding: 12px 15px; border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 13px; color: #5C4405;
+}
+.note--info { border-color: var(--navy-600); background: #EDF3F8; color: var(--ink-2); }
+.note--err { border-color: var(--red); background: var(--red-soft); color: #7A1B15; }
+.note--ok { border-color: var(--green); background: var(--green-soft); color: #145C39; }
+.note b { font-weight: 600; }
+.note ul { margin: 6px 0 0; padding-left: 18px; }
+.note li { margin-bottom: 3px; }
+
+.formula {
+  background: var(--navy-950); color: #DCE7F2; border-radius: var(--r);
+  padding: 16px 18px; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.9;
+  overflow-x: auto;
+}
+.formula .cmt { color: #7E93A8; }
+.formula .hl { color: var(--yellow); }
+.formula .op { color: #9DD4DF; }
+.frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 2px; }
+.frac .n { border-bottom: 1px solid #93A7BA; padding: 0 6px 2px; }
+.frac .d { padding: 2px 6px 0; }
+
+.assump { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.assump__item { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 12px 14px; background: var(--surface-2); }
+.assump__item h5 { margin: 0 0 5px; font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+.assump__item p { margin: 0; font-size: 12.5px; color: var(--ink-2); }
+
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; }
+.kv dt { color: var(--ink-3); }
+.kv dd { margin: 0; text-align: right; font-family: var(--f-mono); color: var(--ink); }
+
+.tabs-inline { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.tabs-inline button {
+  border: 1px solid var(--line-2); background: #fff; padding: 6px 12px; border-radius: 20px;
+  font-size: 12.5px; color: var(--ink-3);
+}
+.tabs-inline button.on { background: var(--navy-800); border-color: var(--navy-800); color: #fff; }
+
+.scn { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+.scn:last-child { border-bottom: 0; }
+.scn__name { font-weight: 500; font-size: 13.5px; color: var(--ink); }
+.scn__meta { font-size: 11.5px; color: var(--ink-4); }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--navy-900); color: #fff; padding: 11px 18px; border-radius: 8px;
+  font-size: 13.5px; box-shadow: var(--shadow-3); z-index: 200;
+  display: flex; align-items: center; gap: 10px; border-left: 3px solid var(--yellow);
+  animation: toastIn .22s ease-out;
+}
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+.sticky-rail { position: sticky; top: 78px; }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: #fff; }
+.step { padding: 18px 20px; border-right: 1px solid var(--line); }
+.step:last-child { border-right: 0; }
+.step__n { font-family: var(--f-mono); font-size: 11px; color: var(--yellow); letter-spacing: .12em; }
+.step h4 { font-size: 14.5px; margin: 6px 0 4px; }
+.step p { font-size: 12.5px; color: var(--ink-3); margin: 0; }
+
+.footer { border-top: 1px solid var(--line); padding: 22px 0 34px; color: var(--ink-4); font-size: 12px; }
+.footer b { color: var(--ink-3); font-weight: 500; }
+
+.report-preview { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 26px 30px; box-shadow: var(--shadow-2); }
+.report-preview h3 { font-size: 17px; border-bottom: 2px solid var(--navy-800); padding-bottom: 8px; margin-bottom: 12px; }
+.report-preview ol { padding-left: 20px; color: var(--ink-2); font-size: 13px; line-height: 2; }
+
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+
+@media (max-width: 1080px) {
+  .hero__inner { grid-template-columns: 1fr; gap: 30px; padding-top: 40px; padding-bottom: 34px; }
+  .split { grid-template-columns: 1fr; }
+  .sticky-rail { position: static; }
+  .g4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .g3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 720px) {
+  .wrap { padding: 0 15px; }
+  .topbar__inner { height: auto; padding: 10px 15px; flex-wrap: wrap; gap: 10px; }
+  .nav { margin-left: 0; width: 100%; }
+  .topbar__chip { display: none; }
+  .hero h1 { font-size: 29px; }
+  .g2, .g3, .g4, .g-auto, .g-auto-sm { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .step { border-right: 0; border-bottom: 1px solid var(--line); }
+  .field__row, .field__row--3 { grid-template-columns: 1fr 1fr; }
+  .card { padding: 16px; }
+  .stat__v { font-size: 22px; }
+  .page { padding-top: 22px; padding-bottom: 50px; }
+}
+
+@media (max-width: 560px) {
+  .field__row, .field__row--3 { grid-template-columns: 1fr; }
+  .tabs-inline { gap: 5px; }
+  .tabs-inline button { font-size: 12px; padding: 5px 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+</style>
+</head>
+<body>
+<div id="root">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0A1C31;color:#8FA6BC;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.08em">
+    LOADING EQUIPWISE&hellip;
+  </div>
+</div>
+<noscript>
+  <div style="padding:40px;font-family:system-ui,sans-serif;max-width:640px;margin:0 auto">
+    <h1 style="font-size:22px">EquipWise needs JavaScript</h1>
+    <p>This is an interactive engineering-economics calculator. Enable JavaScript in your browser to run the
+    EUAC comparison, break-even and sensitivity analysis.</p>
+  </div>
+</noscript>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
+<!-- ================= calculation engine (pure, UI-independent) ================= -->
+<script>
+/* =========================================================================
+   EquipWise — Engineering Economics Calculation Engine
+   Equivalent Uniform Annual Cost (EUAC) / Equivalent Uniform Annual Worth
+   Pure functions. No DOM. No UI. Reproducible.
+   ========================================================================= */
+(function (global) {
+  'use strict';
+
+  var Engine = {};
+
+  /* ---------------------------------------------------------------- utils */
+  function num(v) { var x = parseFloat(v); return isFinite(x) ? x : 0; }
+  function clamp(x, a, b) { return Math.min(b, Math.max(a, x)); }
+  function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  Engine.num = num;
+  Engine.deepClone = deepClone;
+
+  /* -------------------------------------------------------------- factors */
+  /* (A/P, i, n) capital recovery factor. Zero-rate case handled separately. */
+  function apf(i, n) {
+    if (!(n > 0)) return 0;
+    if (Math.abs(i) < 1e-12) return 1 / n;
+    var p = Math.pow(1 + i, n);
+    return (i * p) / (p - 1);
+  }
+  /* (A/F, i, n) sinking fund factor. */
+  function af(i, n) {
+    if (!(n > 0)) return 0;
+    if (Math.abs(i) < 1e-12) return 1 / n;
+    return i / (Math.pow(1 + i, n) - 1);
+  }
+  /* (P/F, i, n) single payment present worth factor. */
+  function pfv(i, n) { return Math.pow(1 + i, -n); }
+  /* (P/A, i, n) uniform series present worth factor. */
+  function paf(i, n) {
+    if (!(n > 0)) return 0;
+    if (Math.abs(i) < 1e-12) return n;
+    return (1 - Math.pow(1 + i, -n)) / i;
+  }
+  /* Effective periodic rate from an annual effective rate. */
+  function periodRate(iAnnual, perYear) {
+    if (Math.abs(iAnnual) < 1e-12) return 0;
+    return Math.pow(1 + iAnnual, 1 / perYear) - 1;
+  }
+
+  Engine.apf = apf; Engine.af = af; Engine.pfv = pfv; Engine.paf = paf;
+  Engine.periodRate = periodRate;
+
+  /* --------------------------------------------------------- derived bits */
+  function productiveHours(inp) {
+    var h = num(inp.project.hoursPerYear);
+    var u = clamp(num(inp.project.utilizationPct), 0, 100);
+    return h * u / 100;
+  }
+  Engine.productiveHours = productiveHours;
+
+  function analysisYears(inp) {
+    var n = num(inp.project.analysisYears);
+    if (!(n > 0)) n = num(inp.project.durationMonths) / 12;
+    return Math.max(n, 1 / 12);
+  }
+  Engine.analysisYears = analysisYears;
+
+  /* Component buckets used everywhere (capital + salvage = capital recovery) */
+  var KEYS = ['capital', 'maint', 'oper', 'own', 'lease', 'other', 'salvage'];
+  Engine.KEYS = KEYS;
+
+  function emptyFlow(t) {
+    return { t: t, capital: 0, maint: 0, oper: 0, own: 0, lease: 0, other: 0, salvage: 0 };
+  }
+  function pushFlow(arr, t, key, amt) {
+    if (!amt) return;
+    var f = null;
+    for (var k = 0; k < arr.length; k++) { if (Math.abs(arr[k].t - t) < 1e-9) { f = arr[k]; break; } }
+    if (!f) { f = emptyFlow(t); arr.push(f); }
+    f[key] += amt;
+  }
+
+  /* ======================================================================
+     BUY  —  ownership cash-flow stream
+     EUAC_B = PW_B (A/P, i, n),  PW_B = P + sum C_t/(1+i)^t - S/(1+i)^n
+     ====================================================================== */
+  function buyFlows(inp, nYears) {
+    var b = inp.buy, e = inp.econ;
+    var price = num(b.price);
+    var life = Math.max(0.25, num(b.economicLifeYears) || nYears);
+    var replace = !!b.replacement && nYears > life + 1e-9;
+    var cycles = replace ? Math.ceil(nYears / life - 1e-9) : 1;
+    var dpPct = clamp(num(b.downPaymentPct), 0, 100);
+    var tenure = num(b.loanTenureYears);
+    var loanRate = num(b.loanRate) / 100;
+    var dp = price * dpPct / 100;
+    var loan = price - dp;
+    var ownerView = (b.financingView === 'owner') && dpPct < 100 && tenure > 0 && loan > 0 && !replace;
+    var A = (loan > 0 && tenure > 0) ? loan * apf(loanRate, tenure) : 0;
+
+    var taxRate = num(e.taxRate) / 100;
+    var atF = e.afterTax ? (1 - taxRate) : 1;
+    var infl = num(e.inflationRate) / 100;
+    var hours = productiveHours(inp);
+    var resale = num(b.resaleValue);
+    var ownAnnual = num(b.insuranceAnnual) + num(b.registrationAnnual) +
+                    num(b.storageAnnual) + num(b.otherAnnual);
+    var opAnnual = num(b.operatingCostPerHour) * hours;
+    var m1 = num(b.maintenanceYear1);
+    var g = num(b.maintenanceEscalationPct) / 100;
+    var depBase = Math.max(0, price - resale);
+
+    var flows = [];
+    var detail = { cycles: cycles, replace: replace, ownerView: ownerView, loanPayment: A,
+                   downPayment: dp, loan: loan, life: life };
+
+    for (var k = 0; k < cycles; k++) {
+      var start = k * life;
+      if (start >= nYears - 1e-9) break;
+      var len = Math.min(life, nYears - start);
+      var fullCycle = len >= life - 1e-9;
+
+      /* --- capital outlay at the start of the cycle --- */
+      if (ownerView) pushFlow(flows, start, 'capital', dp);
+      else pushFlow(flows, start, 'capital', price);
+
+      /* --- loan repayments (owner's financing cash flows) --- */
+      if (ownerView) {
+        var payYears = Math.min(tenure, len);
+        for (var y1 = 1; y1 <= Math.ceil(payYears - 1e-9); y1++) {
+          var frac = Math.min(1, payYears - (y1 - 1));
+          if (frac <= 1e-9) break;
+          pushFlow(flows, start + y1 - 1 + frac, 'other', A * frac);
+        }
+      }
+
+      /* --- recurring annual costs, prorated for partial years --- */
+      var nPeriods = Math.ceil(len - 1e-9);
+      for (var y = 0; y < nPeriods; y++) {
+        var overlap = Math.min(1, len - y);
+        if (overlap <= 1e-9) break;
+        var t = start + y + overlap;
+        var gYear = Math.floor(start + y);
+        var escInfl = Math.pow(1 + infl, gYear);
+
+        var maint = m1 * Math.pow(1 + g, y) * overlap;
+        var own = ownAnnual * escInfl * overlap;
+        var op = opAnnual * escInfl * overlap;
+
+        if (maint) pushFlow(flows, t, 'maint', maint * atF);
+        if (own) pushFlow(flows, t, 'own', own * atF);
+        if (op) pushFlow(flows, t, 'oper', op * atF);
+
+        /* straight-line depreciation tax shield */
+        if (e.afterTax && taxRate > 0 && life > 0) {
+          var shield = taxRate * (depBase / life) * overlap;
+          if (shield) pushFlow(flows, t, 'other', -shield);
+        }
+      }
+
+      /* --- terminal resale value at the end of the cycle --- */
+      var endT = start + len;
+      var sal = resale;
+      if (ownerView && tenure > nYears) {
+        var rem = tenure - nYears;
+        var bal = loanRate > 0 ? A * paf(loanRate, rem) : A * rem;
+        sal = resale - bal;   /* sale proceeds must clear the outstanding loan */
+        detail.balanceAtEnd = bal;
+      }
+      if (sal) pushFlow(flows, endT, 'salvage', -sal);
+      if (!fullCycle && !replace) detail.partial = true;
+    }
+
+    return { granularity: 'annual', flows: flows, detail: detail };
+  }
+
+  /* ======================================================================
+     LEASE
+     ====================================================================== */
+  function leaseFlows(inp, nYears) {
+    var l = inp.lease, e = inp.econ;
+    var months = Math.max(1, Math.round(nYears * 12));
+    var term = Math.max(1, Math.round(num(l.termMonths) || months));
+    var cycles = Math.ceil(months / term - 1e-9);
+    var base = num(l.payment);
+    var esc = num(l.escalationPct) / 100;
+    var taxRate = num(e.taxRate) / 100;
+    var atF = e.afterTax ? (1 - taxRate) : 1;
+    var infl = num(e.inflationRate) / 100;
+    var hours = productiveHours(inp);
+    var flows = [];
+    var deposit = num(l.deposit);
+    var lesseeMaint = (l.maintenanceResponsibility === 'lessee') ? num(l.lesseeMaintenanceAnnual) : 0;
+    var lesseeIns = num(l.lesseeInsuranceAnnual);
+    var opPerHr = num(l.operatingCostPerHour);
+    var adv = num(l.advancePayment);
+    var termPay = num(l.terminationPayment);
+    var monthsPerPayment = (l.paymentFrequency === 'annual') ? 12 : 1;
+
+    for (var k = 0; k < cycles; k++) {
+      var startM = k * term;
+      if (startM >= months) break;
+      var len = Math.min(term, months - startM);
+
+      if (adv) pushFlow(flows, startM, 'other', adv * atF);
+      if (deposit) pushFlow(flows, startM, 'other', deposit);   /* refundable: not tax-effected */
+
+      for (var m = 1; m <= len; m++) {
+        var mm = startM + m;
+        var yearIdx = Math.floor((mm - 1) / 12);
+        var pay = base * Math.pow(1 + esc, yearIdx);
+        if (monthsPerPayment === 12) {
+          if (mm % 12 === 0) pushFlow(flows, mm, 'lease', pay * atF);
+        } else {
+          pushFlow(flows, mm, 'lease', pay * atF);
+        }
+        if (lesseeMaint) pushFlow(flows, mm, 'maint', (lesseeMaint / 12) * Math.pow(1 + infl, yearIdx) * atF);
+        if (lesseeIns) pushFlow(flows, mm, 'own', (lesseeIns / 12) * Math.pow(1 + infl, yearIdx) * atF);
+        if (opPerHr) pushFlow(flows, mm, 'oper', (opPerHr * hours / 12) * Math.pow(1 + infl, yearIdx) * atF);
+      }
+
+      /* refundable deposit returned at the end of the term */
+      var retM = (cycles === 1 && num(l.depositReturnMonth) > 0)
+        ? Math.min(months, Math.round(num(l.depositReturnMonth)))
+        : startM + len;
+      if (deposit) pushFlow(flows, retM, 'other', -deposit);
+    }
+
+    if (termPay) pushFlow(flows, months, 'other', termPay * atF);
+
+    return { granularity: 'monthly', flows: flows,
+             detail: { months: months, term: term, cycles: cycles } };
+  }
+
+  /* ======================================================================
+     RENT
+     ====================================================================== */
+  function monthlyRentalRate(r) {
+    var v = num(r.rateValue);
+    if (r.rateBasis === 'day') return v * (num(r.daysPerMonth) || 26);
+    if (r.rateBasis === 'week') return v * (52 / 12);
+    return v;
+  }
+  Engine.monthlyRentalRate = monthlyRentalRate;
+
+  function rentFlows(inp, nYears) {
+    var r = inp.rent, e = inp.econ;
+    var months = Math.max(1, Math.round(nYears * 12));
+    var requested = Math.round(num(r.durationMonths));
+    if (requested > 0) months = requested;   /* committed hire period */
+    var taxRate = num(e.taxRate) / 100;
+    var atF = e.afterTax ? (1 - taxRate) : 1;
+    var infl = num(e.inflationRate) / 100;
+    var hours = productiveHours(inp);
+    var flows = [];
+    var esc = num(r.escalationPct) / 100;
+    var ot = num(r.overtimePerMonth);
+    var dtPct = num(r.downtimePct) / 100;
+    var minHire = num(r.minHireMonths);
+    var opPerHr = num(r.fuelIncluded === false || r.operatorIncluded === false)
+      ? num(r.renterOperatingCostPerHour) : 0;
+
+    var sumCharge = 0;
+    for (var m = 1; m <= months; m++) {
+      var yearIdx = Math.floor((m - 1) / 12);
+      var rate = monthlyRentalRate(r) * Math.pow(1 + esc, yearIdx);
+      var charge = (rate + ot) * atF;
+      pushFlow(flows, m, 'lease', charge);
+      sumCharge += charge;
+      if (opPerHr) pushFlow(flows, m, 'oper', (opPerHr * hours / 12) * Math.pow(1 + infl, yearIdx) * atF);
+    }
+
+    /* downtime / replacement-equipment allowance */
+    if (dtPct > 0 && sumCharge > 0) {
+      for (var m2 = 1; m2 <= months; m2++) {
+        var yr2 = Math.floor((m2 - 1) / 12);
+        var extra = monthlyRentalRate(r) * Math.pow(1 + esc, yr2) * dtPct * atF;
+        pushFlow(flows, m2, 'other', extra);
+      }
+    }
+
+    /* minimum hire shortfall: paid inside the study period */
+    if (minHire > months) {
+      var shortfall = (minHire - months) * monthlyRentalRate(r) * atF;
+      pushFlow(flows, months, 'other', shortfall);
+    }
+
+    if (num(r.mobDemob)) {
+      pushFlow(flows, 0, 'other', num(r.mobDemob) * atF);
+      pushFlow(flows, months, 'other', num(r.mobDemob) * atF);
+    }
+
+    return { granularity: 'monthly', flows: flows,
+             detail: { months: months, billable: Math.max(months, minHire) } };
+  }
+
+  /* ======================================================================
+     PRESENT WORTH / ANNUAL EQUIVALENT
+     ====================================================================== */
+  function pwOf(flows, granularity, i, timing) {
+    var per = granularity === 'monthly' ? 12 : 1;
+    var r = per === 12 ? periodRate(i, 12) : i;
+    var mid = timing === 'mid';
+    var out = { total: 0 };
+    for (var k = 0; k < KEYS.length; k++) out[KEYS[k]] = 0;
+    for (var f = 0; f < flows.length; f++) {
+      var fl = flows[f];
+      for (var j = 0; j < KEYS.length; j++) {
+        var key = KEYS[j];
+        if (!fl[key]) continue;
+        var shift = (mid && fl.t > 0 && key !== 'capital' && key !== 'salvage') ? 0.5 : 0;
+        var df = Math.pow(1 + r, -(fl.t - shift));
+        out[key] += fl[key] * df;
+        out.total += fl[key] * df;
+      }
+    }
+    return out;
+  }
+  Engine.pwOf = pwOf;
+
+  /* Annual table: nominal and discounted cash flows grouped by year */
+  function annualTable(flows, granularity, i, nYears, timing) {
+    var mid = timing === 'mid';
+    var per = granularity === 'monthly' ? 12 : 1;
+    var r = per === 12 ? periodRate(i, 12) : i;
+    var nYearsCeil = Math.max(1, Math.ceil(nYears - 1e-9));
+    var rows = [];
+    for (var y = 0; y <= nYearsCeil; y++) {
+      var row = { year: y, capital: 0, maint: 0, oper: 0, own: 0, lease: 0, other: 0, salvage: 0,
+                  total: 0, discounted: 0, cumDiscounted: 0 };
+      rows.push(row);
+    }
+    for (var f = 0; f < flows.length; f++) {
+      var fl = flows[f];
+      var yIdx = granularity === 'monthly' ? Math.floor((fl.t - 1e-9) / 12) : Math.round(fl.t);
+      if (granularity === 'monthly' && fl.t === 0) yIdx = 0;
+      if (granularity === 'annual' && fl.t === 0) yIdx = 0;
+      if (yIdx < 0) yIdx = 0;
+      if (yIdx >= rows.length) yIdx = rows.length - 1;
+      for (var j = 0; j < KEYS.length; j++) {
+        var key = KEYS[j];
+        if (fl[key]) {
+          var shift = (mid && fl.t > 0 && key !== 'capital' && key !== 'salvage') ? 0.5 : 0;
+          var df = Math.pow(1 + r, -(fl.t - shift));
+          rows[yIdx][key] += fl[key];
+          rows[yIdx].total += fl[key];
+          rows[yIdx].discounted += fl[key] * df;
+        }
+      }
+    }
+    var cum = 0;
+    for (var k = 0; k < rows.length; k++) { cum += rows[k].discounted; rows[k].cumDiscounted = cum; }
+    return rows;
+  }
+  Engine.annualTable = annualTable;
+
+  /* ======================================================================
+     FULL EVALUATION
+     ====================================================================== */
+  function evaluateAlt(kind, inp, nYears, i) {
+    var built = kind === 'buy' ? buyFlows(inp, nYears)
+              : kind === 'lease' ? leaseFlows(inp, nYears)
+              : rentFlows(inp, nYears);
+    var pw = pwOf(built.flows, built.granularity, i, inp.econ.timing);
+    var factor = apf(i, nYears);
+    var euac = pw.total * factor;
+    var table = annualTable(built.flows, built.granularity, i, nYears, inp.econ.timing);
+
+    /* annualised component breakdown (sums exactly to EUAC) */
+    var breakdown = {};
+    for (var k = 0; k < KEYS.length; k++) breakdown[KEYS[k]] = pw[KEYS[k]] * factor;
+    breakdown.capitalRecovery = breakdown.capital + breakdown.salvage;
+
+    /* average nominal annual maintenance */
+    var maintTotal = 0, leaseTotal = 0, operTotal = 0;
+    for (var f = 0; f < built.flows.length; f++) {
+      maintTotal += built.flows[f].maint;
+      leaseTotal += built.flows[f].lease;
+      operTotal += built.flows[f].oper;
+    }
+
+    var hours = productiveHours(inp);
+    return {
+      kind: kind,
+      pw: pw.total,
+      pwParts: pw,
+      euac: euac,
+      factor: factor,
+      breakdown: breakdown,
+      flows: built.flows,
+      granularity: built.granularity,
+      table: table,
+      detail: built.detail,
+      annualMaintenance: maintTotal / nYears,
+      annualLeaseRent: leaseTotal / nYears,
+      annualOperating: operTotal / nYears,
+      costPerHour: hours > 0 ? euac / hours : 0,
+      hours: hours
+    };
+  }
+
+  function evaluate(inp) {
+    var n = analysisYears(inp);
+    var i = num(inp.econ.discountRate) / 100;
+    var buy = evaluateAlt('buy', inp, n, i);
+    var lease = evaluateAlt('lease', inp, n, i);
+    var rent = evaluateAlt('rent', inp, n, i);
+
+    var list = [{ k: 'buy', v: buy }, { k: 'lease', v: lease }, { k: 'rent', v: rent }];
+    list.sort(function (a, b) { return a.v.euac - b.v.euac; });
+    var best = list[0], second = list[1], worst = list[2];
+
+    /* initial cash requirement */
+    var b = inp.buy, l = inp.lease, r = inp.rent;
+    var dpPct = clamp(num(b.downPaymentPct), 0, 100);
+    var loanUsed = (b.financingView === 'owner') || (dpPct < 100 && num(b.loanTenureYears) > 0);
+    var buyInitial = loanUsed ? num(b.price) * dpPct / 100 : num(b.price);
+    var leaseInitial = num(l.advancePayment) + num(l.deposit);
+    var rentInitial = num(r.mobDemob) + monthlyRentalRate(r);
+
+    var out = {
+      n: n,
+      i: i,
+      hours: productiveHours(inp),
+      factor: apf(i, n),
+      buy: buy, lease: lease, rent: rent,
+      best: best.k,
+      bestEuac: best.v.euac,
+      secondBest: second.k,
+      secondEuac: second.v.euac,
+      worst: worst.k,
+      savings: second.v.euac - best.v.euac,
+      savingsPct: second.v.euac > 0 ? (second.v.euac - best.v.euac) / second.v.euac * 100 : 0,
+      spread: worst.v.euac - best.v.euac,
+      initial: { buy: buyInitial, lease: leaseInitial, rent: rentInitial },
+      loanUsed: loanUsed,
+      buyFinanced: buyInitial < num(b.price) - 1e-6
+    };
+    out.ranking = list.map(function (x) { return x.k; });
+    return out;
+  }
+  Engine.evaluate = evaluate;
+
+  /* ======================================================================
+     BREAK-EVEN ANALYSIS  (EUAC vs study period)
+     ====================================================================== */
+  function breakEven(inp, opts) {
+    opts = opts || {};
+    var maxYears = opts.maxYears || 15;
+    var step = opts.step || 0.5;
+    var years = [], bArr = [], lArr = [], rArr = [], winners = [];
+    var savedN = inp.project.analysisYears;
+
+    for (var y = step; y <= maxYears + 1e-9; y += step) {
+      inp.project.analysisYears = y;
+      var i = num(inp.econ.discountRate) / 100;
+      var bv = evaluateAlt('buy', inp, y, i).euac;
+      var lv = evaluateAlt('lease', inp, y, i).euac;
+      var rv = evaluateAlt('rent', inp, y, i).euac;
+      years.push(+y.toFixed(2)); bArr.push(bv); lArr.push(lv); rArr.push(rv);
+      var bestK = bv <= lv && bv <= rv ? 'buy' : (lv <= rv ? 'lease' : 'rent');
+      winners.push(bestK);
+    }
+    inp.project.analysisYears = savedN;
+
+    function cross(a, b) {
+      var pts = [];
+      for (var k = 1; k < years.length; k++) {
+        var d0 = a[k - 1] - b[k - 1], d1 = a[k] - b[k];
+        if (d0 === 0) { pts.push(years[k - 1]); continue; }
+        if (d0 * d1 < 0) {
+          var f = d0 / (d0 - d1);
+          pts.push(+(years[k - 1] + f * (years[k] - years[k - 1])).toFixed(2));
+        }
+      }
+      return pts;
+    }
+
+    return {
+      years: years, buy: bArr, lease: lArr, rent: rArr, winners: winners,
+      crossings: {
+        'buy-rent': cross(bArr, rArr),
+        'buy-lease': cross(bArr, lArr),
+        'lease-rent': cross(lArr, rArr)
+      }
+    };
+  }
+  Engine.breakEven = breakEven;
+
+  /* ======================================================================
+     SENSITIVITY
+     ====================================================================== */
+  function getPath(obj, path) {
+    var parts = path.split('.'), o = obj;
+    for (var k = 0; k < parts.length; k++) o = o[parts[k]];
+    return o;
+  }
+  function setPath(obj, path, val) {
+    var parts = path.split('.'), o = obj;
+    for (var k = 0; k < parts.length - 1; k++) o = o[parts[k]];
+    o[parts[parts.length - 1]] = val;
+  }
+  Engine.getPath = getPath; Engine.setPath = setPath;
+
+  function sensitivity(inp, path, opts) {
+    opts = opts || {};
+    var base = getPath(inp, path);
+    var pct = opts.pct == null ? 40 : opts.pct;
+    var steps = opts.steps || 9;
+    var lo = base * (1 - pct / 100), hi = base * (1 + pct / 100);
+    if (opts.absLo != null) lo = opts.absLo;
+    if (opts.absHi != null) hi = opts.absHi;
+    var out = [];
+    var work = deepClone(inp);
+    for (var k = 0; k < steps; k++) {
+      var v = steps === 1 ? base : lo + (hi - lo) * k / (steps - 1);
+      setPath(work, path, v);
+      var res = evaluate(work);
+      out.push({
+        x: v,
+        buy: res.buy.euac, lease: res.lease.euac, rent: res.rent.euac,
+        best: res.best, base: false
+      });
+    }
+    return { path: path, base: base, lo: lo, hi: hi, points: out };
+  }
+  Engine.sensitivity = sensitivity;
+
+  /* Sweep a discrete dimension (duration / utilization) */
+  function sweep(inp, path, values) {
+    var work = deepClone(inp), out = [];
+    for (var k = 0; k < values.length; k++) {
+      setPath(work, path, values[k]);
+      var res = evaluate(work);
+      out.push({ x: values[k], buy: res.buy.euac, lease: res.lease.euac, rent: res.rent.euac, best: res.best });
+    }
+    return out;
+  }
+  Engine.sweep = sweep;
+
+  /* ======================================================================
+     VALIDATION
+     ====================================================================== */
+  function validate(inp) {
+    var errors = [], warnings = [];
+    var p = inp.project, e = inp.econ, b = inp.buy, l = inp.lease, r = inp.rent;
+    var n = analysisYears(inp);
+
+    if (!p.name || !String(p.name).trim()) warnings.push('Project name is empty — it will appear blank on the report cover.');
+    if (num(p.durationMonths) <= 0) errors.push('Project duration must be greater than zero.');
+    if (num(p.hoursPerYear) <= 0) errors.push('Expected operating hours per year must be greater than zero.');
+    if (num(p.hoursPerYear) > 8760) errors.push('Operating hours per year cannot exceed 8,760 (hours in a year).');
+    if (num(p.utilizationPct) <= 0 || num(p.utilizationPct) > 100) errors.push('Utilization must be between 0 and 100 percent.');
+    if (n <= 0) errors.push('Analysis period must be greater than zero.');
+    if (num(p.minCapacity) < 0) errors.push('Minimum required capacity cannot be negative.');
+
+    if (num(e.discountRate) < 0) errors.push('Discount rate cannot be negative.');
+    if (num(e.discountRate) > 100) warnings.push('Discount rate above 100% is unusual — check the entry.');
+    if (num(e.taxRate) < 0 || num(e.taxRate) >= 100) errors.push('Tax rate must be between 0 and 100 percent.');
+    if (e.afterTax && num(e.taxRate) <= 0) warnings.push('After-tax analysis is selected but the tax rate is zero — results equal the before-tax case.');
+
+    if (num(b.price) <= 0) errors.push('Buy option: purchase price must be greater than zero.');
+    if (num(b.downPaymentPct) < 0 || num(b.downPaymentPct) > 100) errors.push('Buy option: down payment must be between 0 and 100 percent of price.');
+    if (num(b.downPaymentPct) > 0 && num(b.downPaymentPct) < 100 && num(b.loanTenureYears) <= 0)
+      errors.push('Buy option: a loan tenure is required when the equipment is financed.');
+    if (num(b.loanRate) < 0) errors.push('Buy option: loan interest rate cannot be negative.');
+    if (num(b.economicLifeYears) <= 0) errors.push('Buy option: economic life must be greater than zero.');
+    if (num(b.economicLifeYears) > 0 && n > num(b.economicLifeYears) + 1e-9) {
+      if (b.replacement) warnings.push('Analysis period exceeds the economic life — a replacement purchase is being modelled at the end of each life cycle.');
+      else warnings.push('Analysis period (' + n.toFixed(2) + ' yr) exceeds the economic life (' + num(b.economicLifeYears).toFixed(2) + ' yr). Enable replacement, or the machine is assumed to serve the whole period without renewal.');
+    }
+    if (num(b.resaleValue) < 0) errors.push('Buy option: resale value cannot be negative.');
+    if (num(b.resaleValue) > num(b.price)) warnings.push('Resale value exceeds the purchase price — check that the residual is realistic.');
+    if (num(b.maintenanceYear1) < 0 || num(b.maintenanceEscalationPct) < -100)
+      errors.push('Buy option: maintenance costs and escalation must be valid positive values.');
+
+    if (num(l.payment) <= 0 && num(l.advancePayment) <= 0)
+      errors.push('Lease option: enter a lease payment or an advance payment.');
+    if (num(l.termMonths) <= 0) errors.push('Lease option: lease term must be greater than zero months.');
+    if (num(l.deposit) < 0) errors.push('Lease option: security deposit cannot be negative.');
+    if (num(l.depositReturnMonth) > num(l.termMonths) && num(l.deposit) > 0)
+      warnings.push('Lease option: the deposit return month is after the lease term — it is treated as returned at the end of the term.');
+    if (n * 12 > num(l.termMonths) + 1e-6 && num(l.payment) > 0)
+      warnings.push('Lease term is shorter than the analysis period — the lease is assumed to be renewed on the same terms.');
+    if (num(l.escalationPct) < -100) errors.push('Lease option: escalation cannot be below -100%.');
+
+    if (num(r.rateValue) <= 0) errors.push('Rent option: rental rate must be greater than zero.');
+    if (num(r.minHireMonths) < 0) errors.push('Rent option: minimum hire period cannot be negative.');
+    if (num(r.downtimePct) < 0 || num(r.downtimePct) > 100) errors.push('Rent option: downtime allowance must be between 0 and 100 percent.');
+    if (r.rateBasis === 'day' && num(r.daysPerMonth) <= 0) errors.push('Rent option: billable days per month must be greater than zero.');
+    if (num(r.durationMonths) > 0) {
+      var rMonths = Math.round(num(r.durationMonths));
+      var pMonths = Math.round(n * 12);
+      if (Math.abs(rMonths - pMonths) > 0.5) {
+        warnings.push('Rent option: the hire period (' + rMonths + ' months) differs from the analysis period (' +
+          pMonths + ' months). The machine is only billed for the hire period entered, so the alternatives are not ' +
+          'strictly like-for-like.');
+      }
+    }
+
+    var hours = productiveHours(inp);
+    if (hours > 0 && hours < 100) warnings.push('Productive hours per year are very low (' + Math.round(hours) + ' h) — per-hour costs will be dominated by ownership charges.');
+
+    return { errors: errors, warnings: warnings, ok: errors.length === 0 };
+  }
+  Engine.validate = validate;
+
+  /* ======================================================================
+     SAMPLE DATA  (illustrative only — not market quotations)
+     ====================================================================== */
+  var EQUIPMENT = [
+    {
+      id: 'excavator', name: 'Hydraulic Excavator', spec: '20 t class, 1.0 m³ bucket',
+      capacity: '1.0 m³ bucket / 20 t',
+      price: 9500000, resale: 3200000, life: 8,
+      maint: 320000, maintEsc: 9, insurance: 95000, reg: 18000, storage: 60000,
+      rentMonth: 185000, rentDay: 8200, leaseMonth: 205000, hours: 2200,
+      mob: 45000, fuelPerHr: 1450
+    },
+    {
+      id: 'backhoe', name: 'Backhoe Loader', spec: '76 hp, 1.1 m³ / 0.3 m³',
+      capacity: '1.1 m³ bucket / 76 hp',
+      price: 3800000, resale: 1250000, life: 8,
+      maint: 145000, maintEsc: 9, insurance: 38000, reg: 12000, storage: 30000,
+      rentMonth: 95000, rentDay: 4200, leaseMonth: 88000, hours: 2000,
+      mob: 18000, fuelPerHr: 620
+    },
+    {
+      id: 'crane', name: 'Tower Crane', spec: 'TC 5013, 50 m jib, 6 t max',
+      capacity: '6 t @ 14 m / 50 m jib',
+      price: 12500000, resale: 3800000, life: 12,
+      maint: 420000, maintEsc: 8, insurance: 125000, reg: 25000, storage: 90000,
+      rentMonth: 350000, rentDay: 14500, leaseMonth: 285000, hours: 2600,
+      mob: 285000, fuelPerHr: 0
+    },
+    {
+      id: 'pump', name: 'Concrete Boom Pump', spec: '36 m boom, 60 m³/h',
+      capacity: '60 m³/h @ 36 m boom',
+      price: 8500000, resale: 2600000, life: 9,
+      maint: 385000, maintEsc: 10, insurance: 85000, reg: 20000, storage: 55000,
+      rentMonth: 220000, rentDay: 9500, leaseMonth: 195000, hours: 1600,
+      mob: 65000, fuelPerHr: 980
+    },
+    {
+      id: 'loader', name: 'Wheel Loader', spec: '3.1 m³ bucket, 18 t',
+      capacity: '3.1 m³ bucket / 18 t',
+      price: 7200000, resale: 2400000, life: 9,
+      maint: 265000, maintEsc: 9, insurance: 72000, reg: 16000, storage: 45000,
+      rentMonth: 140000, rentDay: 6100, leaseMonth: 155000, hours: 2100,
+      mob: 32000, fuelPerHr: 890
+    },
+    {
+      id: 'roller', name: 'Soil Compactor / Roller', spec: 'Vibratory, 11 t',
+      capacity: '11 t operating weight',
+      price: 4200000, resale: 1350000, life: 8,
+      maint: 155000, maintEsc: 9, insurance: 42000, reg: 12000, storage: 28000,
+      rentMonth: 85000, rentDay: 3800, leaseMonth: 92000, hours: 1800,
+      mob: 15000, fuelPerHr: 430
+    },
+    {
+      id: 'batching', name: 'Batching Plant', spec: '60 m³/h, twin shaft',
+      capacity: '60 m³/h output',
+      price: 11000000, resale: 3400000, life: 12,
+      maint: 480000, maintEsc: 8, insurance: 110000, reg: 20000, storage: 120000,
+      rentMonth: 280000, rentDay: 11500, leaseMonth: 245000, hours: 2400,
+      mob: 150000, fuelPerHr: 210
+    }
+  ];
+  Engine.EQUIPMENT = EQUIPMENT;
+
+  /* ---------------------------------------------------------------------
+     Equipment registry. EQUIPMENT holds the illustrative samples shipped
+     with the tool; the UI layer keeps the user's own records in local
+     storage and hands them over with setCustomEquipment(). Custom records
+     use the same field names, so every calculation path works unchanged.
+     --------------------------------------------------------------------- */
+  var CUSTOM = [];
+
+  Engine.setCustomEquipment = function (list) {
+    CUSTOM = Array.isArray(list) ? list.slice() : [];
+    return CUSTOM.length;
+  };
+  Engine.customEquipment = function () { return CUSTOM.slice(); };
+  Engine.allEquipment = function () { return CUSTOM.concat(EQUIPMENT); };
+
+  function equipmentById(id) {
+    for (var k = 0; k < CUSTOM.length; k++) if (CUSTOM[k].id === id) return CUSTOM[k];
+    for (var j = 0; j < EQUIPMENT.length; j++) if (EQUIPMENT[j].id === id) return EQUIPMENT[j];
+    return EQUIPMENT[0];
+  }
+  Engine.equipmentById = equipmentById;
+
+  function defaultInputs(equipId) {
+    var q = equipmentById(equipId || 'excavator');
+    /* a user record may carry no lease rate: derive a plausible one from price */
+    var leaseM = (q.leaseMonth != null && q.leaseMonth > 0) ? q.leaseMonth : Math.round(q.price * 0.021);
+    return {
+      project: {
+        name: 'Metro Viaduct Package 4 — Earthwork',
+        equipmentId: q.id,
+        durationValue: 36, durationUnit: 'months', durationMonths: 36,
+        hoursPerYear: q.hours, utilizationPct: 75,
+        analysisYears: 3, minCapacity: 1.0
+      },
+      econ: {
+        discountRate: 11, inflationRate: 5, taxRate: 25, afterTax: false,
+        timing: 'end'
+      },
+      buy: {
+        price: q.price,
+        downPaymentPct: 20, loanRate: 10.5, loanTenureYears: 5,
+        financingView: 'economic',
+        maintenanceYear1: q.maint, maintenanceEscalationPct: q.maintEsc,
+        insuranceAnnual: q.insurance, registrationAnnual: q.reg, storageAnnual: q.storage,
+        otherAnnual: 0, operatingCostPerHour: 0,
+        resaleValue: (q.resale != null ? Math.round(q.resale) : Math.round(q.price * 0.34)),
+        economicLifeYears: q.life,
+        replacement: false
+      },
+      lease: {
+        advancePayment: Math.round(leaseM * 3),
+        payment: leaseM, paymentFrequency: 'monthly',
+        termMonths: 24, escalationPct: 5,
+        maintenanceResponsibility: 'lessor', lesseeMaintenanceAnnual: 0,
+        lesseeInsuranceAnnual: Math.round(q.insurance * 0.6),
+        deposit: Math.round(leaseM * 2), depositReturnMonth: 24,
+        terminationPayment: 0, operatingCostPerHour: 0
+      },
+      rent: {
+        rateValue: q.rentMonth, rateBasis: 'month', daysPerMonth: 26, durationMonths: 0,
+        minHireMonths: 1, escalationPct: 0,
+        mobDemob: q.mob,
+        operatorIncluded: true, fuelIncluded: true,
+        renterOperatingCostPerHour: 0,
+        overtimePerMonth: 0, downtimePct: 5
+      }
+    };
+  }
+  Engine.defaultInputs = defaultInputs;
+
+  /* ------------------------------------------------------ INR formatting */
+  function formatINR(v, opts) {
+    opts = opts || {};
+    var x = num(v);
+    var neg = x < 0;
+    x = Math.abs(x);
+    var dec = opts.dec == null ? 0 : opts.dec;
+    var s = x.toLocaleString('en-IN', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    return (neg ? '\u2212\u20B9' : '\u20B9') + s;
+  }
+  function compactINR(v) {
+    var x = num(v);
+    var neg = x < 0; x = Math.abs(x);
+    var s;
+    if (x >= 1e7) s = (x / 1e7).toFixed(2) + ' Cr';
+    else if (x >= 1e5) s = (x / 1e5).toFixed(2) + ' L';
+    else if (x >= 1e3) s = (x / 1e3).toFixed(1) + ' k';
+    else s = x.toFixed(0);
+    return (neg ? '\u2212\u20B9' : '\u20B9') + s;
+  }
+  Engine.formatINR = formatINR;
+  Engine.compactINR = compactINR;
+
+  Engine.VERSION = '1.0.0';
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = Engine;
+  global.Engine = Engine;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+
+<!-- ================= interface ================= -->
+<script>
+/* =========================================================================
+   EquipWise — UI part 1: helpers, atoms, chart layer, dashboard, inputs
+   ========================================================================= */
+var React = window.React;
+var html = htm.bind(React.createElement);
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useMemo = React.useMemo;
+var useRef = React.useRef;
+
+var E = window.Engine;
+var INR = E.formatINR;
+var COMP = E.compactINR;
+
+function fx(v, d) { return isFinite(v) ? v.toFixed(d == null ? 1 : d) : '\u2014'; }
+function axisINR(v) {
+  /* compact axis labels, no currency glyph: keeps dense axes legible */
+  var x = Math.abs(v), sign = v < 0 ? '\u2212' : '';
+  if (x >= 1e7) return sign + (x / 1e7).toFixed(1).replace(/\.0$/, '') + ' Cr';
+  if (x >= 1e5) return sign + (x / 1e5).toFixed(x >= 1e6 ? 0 : 1).replace(/\.0$/, '') + ' L';
+  if (x >= 1e3) return sign + (x / 1e3).toFixed(0) + 'k';
+  return sign + x.toFixed(0);
+}
+function pctf(v, d) { return isFinite(v) ? v.toFixed(d == null ? 1 : d) + '%' : '\u2014'; }
+function kfactor(v, d) { return isFinite(v) ? v.toFixed(d == null ? 4 : d) : '\u2014'; }
+function ALTNAME(k) { return k === 'buy' ? 'Buy' : k === 'lease' ? 'Lease' : 'Rent'; }
+function ALTSHORT(k) { return k === 'buy' ? 'Own' : k === 'lease' ? 'Lease' : 'Rent'; }
+
+/* ---------------------------------------------------------------- atoms */
+function Card(props) {
+  return html`<div className=${'card ' + (props.className || '')}>${props.children}</div>`;
+}
+
+function SecHead(props) {
+  return html`<div className="sec-head">
+    <div>
+      ${props.label ? html`<div className="label">${props.label}</div>` : null}
+      <h2>${props.title}</h2>
+      ${props.sub ? html`<p>${props.sub}</p>` : null}
+    </div>
+    ${props.right || null}
+  </div>`;
+}
+
+function Badge(props) {
+  var cls = 'badge badge--' + (props.tone || 'muted');
+  return html`<span className=${cls}>${props.children}</span>`;
+}
+
+function Field(props) {
+  return html`<label className="field">
+    <span className="field__label">
+      <span>${props.label}</span>
+      ${props.unit ? html`<span className="u">${props.unit}</span>` : null}
+    </span>
+    ${props.children}
+    ${props.hint ? html`<span className="field__hint">${props.hint}</span>` : null}
+  </label>`;
+}
+
+function NumIn(props) {
+  var v = props.value;
+  return html`<${Field} label=${props.label} unit=${props.unit} hint=${props.hint}>
+    <input className=${'input num' + (props.bad ? ' err' : '')} type="number" inputMode="decimal"
+      step=${props.step || 'any'} min=${props.min} max=${props.max} value=${v === 0 ? 0 : (v == null ? '' : v)}
+      onChange=${function (e) {
+        var raw = e.target.value;
+        props.onChange(raw === '' ? '' : parseFloat(raw));
+      }} />
+  <//>`;
+}
+
+function TextIn(props) {
+  return html`<${Field} label=${props.label} hint=${props.hint}>
+    <input className="input" type="text" value=${props.value} onChange=${function (e) { props.onChange(e.target.value); }} />
+  <//>`;
+}
+
+function SelIn(props) {
+  return html`<${Field} label=${props.label} hint=${props.hint}>
+    <select className="select" value=${props.value} onChange=${function (e) { props.onChange(e.target.value); }}>
+      ${props.options.map(function (o) {
+        return html`<option key=${o.v} value=${o.v}>${o.t}</option>`;
+      })}
+    </select>
+  <//>`;
+}
+
+function Toggle(props) {
+  return html`<label className="toggle">
+    <input type="checkbox" checked=${!!props.value} onChange=${function (e) { props.onChange(e.target.checked); }} />
+    <span className="toggle__txt">
+      <b>${props.label}</b>
+      ${props.hint ? html`<span>${props.hint}</span>` : null}
+    </span>
+  </label>`;
+}
+
+function Seg(props) {
+  return html`<div className="seg">
+    ${props.options.map(function (o) {
+      return html`<button key=${o.v} type="button"
+        className=${props.value === o.v ? 'on' : ''}
+        onClick=${function () { props.onChange(o.v); }}>${o.t}</button>`;
+    })}
+  </div>`;
+}
+
+/* --------------------------------------------------------------- charts */
+var CHART_REG = {};
+window.__chartReg = CHART_REG;
+
+function ChartBox(props) {
+  var ref = useRef(null);
+  var inst = useRef(null);
+  var sig = useMemo(function () { return JSON.stringify(props.config, function (k, v) { return typeof v === 'function' ? undefined : v; }) + '|' + (props.height || 300); }, [props.config, props.height]);
+
+  useEffect(function () {
+    if (!ref.current) return;
+    if (inst.current) { inst.current.destroy(); inst.current = null; }
+    var cfg = props.config;
+    inst.current = new window.Chart(ref.current.getContext('2d'), cfg);
+    if (props.regKey) CHART_REG[props.regKey] = inst.current;
+    return function () {
+      if (inst.current) { inst.current.destroy(); inst.current = null; }
+    };
+  }, [sig]);
+
+  return html`<div className="chartbox" style=${{ height: (props.height || 300) + 'px' }}>
+    <canvas ref=${ref}></canvas>
+  </div>`;
+}
+
+var MONO = "'IBM Plex Mono', ui-monospace, monospace";
+var SANS = "'IBM Plex Sans', system-ui, sans-serif";
+
+function baseOpts(opts) {
+  opts = opts || {};
+  var o = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    layout: { padding: { top: 4, right: 10, bottom: 0, left: 10 } },
+    plugins: {
+      legend: {
+        display: opts.legend !== false,
+        position: 'bottom',
+        labels: {
+          boxWidth: 9, boxHeight: 9, usePointStyle: true, pointStyle: 'rectRounded',
+          font: { family: SANS, size: 11.5 }, color: '#66788A', padding: 14
+        }
+      },
+      tooltip: {
+        backgroundColor: '#0A1C31', padding: 11, cornerRadius: 7,
+        titleFont: { family: SANS, size: 12, weight: '600' },
+        bodyFont: { family: MONO, size: 12 },
+        boxWidth: 8, boxHeight: 8, usePointStyle: true,
+        callbacks: opts.tip || {}
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { font: { family: MONO, size: 10.5 }, color: '#94A3B0', maxRotation: 0, autoSkipPadding: 12 },
+        border: { color: '#E2E8ED' }
+      },
+      y: {
+        grid: { color: '#EEF2F5', drawTicks: false },
+        border: { display: false },
+        afterFit: function (scale) { scale.width = scale.width + 10; },
+        ticks: {
+          font: { family: MONO, size: 10.5 }, color: '#94A3B0', padding: 8,
+          callback: opts.ycb || axisINR
+        }
+      }
+    }
+  };
+  if (opts.yTitle) o.scales.y.title = { display: true, text: opts.yTitle, color: '#94A3B0', font: { family: MONO, size: 10 } };
+  if (opts.xTitle) o.scales.x.title = { display: true, text: opts.xTitle, color: '#94A3B0', font: { family: MONO, size: 10 } };
+  if (opts.stacked) { o.scales.x.stacked = true; o.scales.y.stacked = true; }
+  if (opts.yMin != null) o.scales.y.beginAtZero = false;
+  return o;
+}
+
+var C_BUY = '#143454', C_LEASE = '#D99413', C_RENT = '#2E7D8F';
+var C_BUY_L = 'rgba(20,52,84,.10)', C_LEASE_L = 'rgba(217,148,19,.14)', C_RENT_L = 'rgba(46,125,143,.14)';
+
+function euacBarConfig(res) {
+  var labels = ['Buy (own)', 'Lease', 'Rent'];
+  var vals = [res.buy.euac, res.lease.euac, res.rent.euac];
+  var cols = [C_BUY, C_LEASE, C_RENT];
+  var bestIdx = ['buy', 'lease', 'rent'].indexOf(res.best);
+  return {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Equivalent uniform annual cost',
+        data: vals,
+        backgroundColor: cols,
+        borderRadius: 5,
+        borderWidth: 0,
+        barPercentage: 0.58,
+        categoryPercentage: 0.7
+      }]
+    },
+    options: baseOpts({
+      legend: false,
+      yTitle: 'EUAC per year (INR)',
+      ycb: axisINR,
+      tip: {
+        label: function (c) {
+          var idx = c.dataIndex;
+          var gap = vals[idx] - Math.min.apply(null, vals);
+          return 'EUAC ' + INR(c.parsed.y) + (gap > 1 ? '  (+' + COMP(gap) + ' vs best)' : '  (lowest)');
+        }
+      }
+    })
+  };
+}
+
+function stackedConfig(res) {
+  var cats = [
+    { k: 'capitalRecovery', t: 'Capital recovery (P less salvage)', c: '#143454' },
+    { k: 'maint', t: 'Maintenance and repair', c: '#D99413' },
+    { k: 'oper', t: 'Fuel and operator', c: '#8A5F06' },
+    { k: 'own', t: 'Insurance, registration, storage', c: '#6E8CA8' },
+    { k: 'lease', t: 'Lease / rental payments', c: '#2E7D8F' },
+    { k: 'other', t: 'Other (advance, deposit, mob, fees)', c: '#94A3B0' }
+  ];
+  var sets = cats.map(function (cat) {
+    return {
+      label: cat.t,
+      data: [res.buy.breakdown[cat.k], res.lease.breakdown[cat.k], res.rent.breakdown[cat.k]].map(function (v) { return Math.abs(v) < 0.5 ? 0 : v; }),
+      backgroundColor: cat.c,
+      borderRadius: 2,
+      borderWidth: 0,
+      barPercentage: 0.6,
+      categoryPercentage: 0.72
+    };
+  });
+  return {
+    type: 'bar',
+    data: { labels: ['Buy (own)', 'Lease', 'Rent'], datasets: sets },
+    options: baseOpts({
+      stacked: true,
+      yTitle: 'Annual cost (INR)',
+      tip: { label: function (c) { return c.dataset.label + ': ' + INR(c.parsed.y); } }
+    })
+  };
+}
+
+function cumulativeConfig(res) {
+  var years = res.buy.table.map(function (r) { return r.year === 0 ? '0' : 'Yr ' + r.year; });
+  return {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'Buy', data: res.buy.table.map(function (r) { return r.cumDiscounted; }), borderColor: C_BUY, backgroundColor: C_BUY_L, fill: true, tension: .28, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2 },
+        { label: 'Lease', data: res.lease.table.map(function (r) { return r.cumDiscounted; }), borderColor: C_LEASE, backgroundColor: C_LEASE_L, fill: false, tension: .28, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2, borderDash: [5, 3] },
+        { label: 'Rent', data: res.rent.table.map(function (r) { return r.cumDiscounted; }), borderColor: C_RENT, backgroundColor: C_RENT_L, fill: false, tension: .28, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2 }
+      ]
+    },
+    options: baseOpts({
+      xTitle: 'End of year',
+      yTitle: 'Cumulative cost (INR)',
+      tip: { label: function (c) { return c.dataset.label + ': ' + INR(c.parsed.y); } }
+    })
+  };
+}
+
+function durationConfig(be, currentN) {
+  return {
+    type: 'line',
+    data: {
+      labels: be.years.map(function (y) { return y + 'y'; }),
+      datasets: [
+        { label: 'Buy', data: be.buy, borderColor: C_BUY, backgroundColor: 'transparent', tension: .25, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2 },
+        { label: 'Lease', data: be.lease, borderColor: C_LEASE, backgroundColor: 'transparent', tension: .25, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2, borderDash: [5, 3] },
+        { label: 'Rent', data: be.rent, borderColor: C_RENT, backgroundColor: 'transparent', tension: .25, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2 }
+      ]
+    },
+    options: baseOpts({
+      xTitle: 'Study period (years)',
+      yTitle: 'EUAC per year (INR)',
+      tip: { title: function (items) { return 'Study period ' + items[0].label; }, label: function (c) { return c.dataset.label + ': ' + INR(c.parsed.y); } }
+    })
+  };
+}
+
+function sweepConfig(points, xlabel, tipX, yMin) {
+  return {
+    type: 'line',
+    data: {
+      labels: points.map(function (p) { return tipX ? tipX(p.x) : p.x; }),
+      datasets: [
+        { label: 'Buy', data: points.map(function (p) { return p.buy; }), borderColor: C_BUY, backgroundColor: 'transparent', tension: .22, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2 },
+        { label: 'Lease', data: points.map(function (p) { return p.lease; }), borderColor: C_LEASE, backgroundColor: 'transparent', tension: .22, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2, borderDash: [5, 3] },
+        { label: 'Rent', data: points.map(function (p) { return p.rent; }), borderColor: C_RENT, backgroundColor: 'transparent', tension: .22, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2.2 }
+      ]
+    },
+    options: baseOpts({
+      xTitle: xlabel,
+      tip: { label: function (c) { return c.dataset.label + ': ' + INR(c.parsed.y); } }
+    })
+  };
+}
+
+/* ----------------------------------------------------------- equipment */
+var ICONS = {
+  excavator: html`<g><rect x="3" y="21" width="24" height="7" rx="3.5"/><path d="M9 21v-6h8"/><path d="M17 15l4-6"/><path d="M21 9l6 2-2.5 6-4-1.5z"/><path d="M6 15h4"/></g>`,
+  backhoe: html`<g><circle cx="9" cy="24" r="3.6"/><circle cx="27" cy="24" r="4.4"/><path d="M4 21v-6h6l2-4h9l2 4h3"/><path d="M18 15l6-5 5 1"/><path d="M29 11l3 4-4 2"/><path d="M13 21v-4h7"/></g>`,
+  crane: html`<g><path d="M6 28V6h5v22"/><path d="M6 8h30"/><path d="M22 8v7"/><path d="M19 15h6v4h-6z"/><path d="M31 8v5"/><path d="M3 28h12"/></g>`,
+  pump: html`<g><circle cx="10" cy="25" r="3.2"/><circle cx="27" cy="25" r="3.2"/><path d="M4 21h24v-6H8"/><path d="M8 15v-4h8"/><path d="M16 11l16-6"/><path d="M32 5l3 5"/><path d="M28 12l5 2"/></g>`,
+  loader: html`<g><circle cx="11" cy="24" r="4.6"/><circle cx="26" cy="24" r="4.6"/><path d="M6 21v-7h12l3 4h6v4"/><path d="M18 14l4-5 7 1"/><path d="M29 10l5 3-4 3"/><path d="M4 21h4"/></g>`,
+  roller: html`<g><circle cx="9" cy="24" r="4.8"/><circle cx="28" cy="25" r="3.4"/><path d="M9 19h13l4-6"/><path d="M20 13h10"/><path d="M22 13v5"/><path d="M14 19v-4h6"/></g>`,
+  batching: html`<g><path d="M8 28V13l9-5 9 5v15"/><path d="M8 13h18"/><path d="M13 28v-7h8v7"/><path d="M26 18h8v10h-8"/><path d="M3 28h34"/></g>`
+};
+
+function EquipIcon(props) {
+  return html`<svg className="equip__icon" viewBox="0 0 40 32" fill="none" stroke="currentColor"
+    strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">${ICONS[props.id] || ICONS.excavator}</svg>`;
+}
+
+/* ------------------------------------------------- equipment editor ---- */
+var EQ_ICON_OPTS = [
+  { v: 'excavator', t: 'Excavator' }, { v: 'backhoe', t: 'Backhoe loader' },
+  { v: 'crane', t: 'Tower crane' }, { v: 'pump', t: 'Concrete pump' },
+  { v: 'loader', t: 'Wheel loader' }, { v: 'roller', t: 'Compactor / roller' },
+  { v: 'batching', t: 'Batching plant' }
+];
+
+function EquipmentEditor(props) {
+  var init = props.initial || {};
+  var startSt = useState(function () {
+    return {
+      name: init.name || '', spec: init.spec || '', icon: init.icon || 'excavator',
+      capacity: init.capacity || '',
+      price: init.price != null ? init.price : '',
+      resale: init.resale != null ? init.resale : '',
+      life: init.life != null ? init.life : 8,
+      maint: init.maint != null ? init.maint : '',
+      maintEsc: init.maintEsc != null ? init.maintEsc : 9,
+      insurance: init.insurance != null ? init.insurance : '',
+      reg: init.reg != null ? init.reg : '',
+      storage: init.storage != null ? init.storage : '',
+      hours: init.hours != null ? init.hours : 2000,
+      rentMonth: init.rentMonth != null ? init.rentMonth : '',
+      leaseMonth: init.leaseMonth != null ? init.leaseMonth : '',
+      mob: init.mob != null ? init.mob : ''
+    };
+  });
+  var f = startSt[0], setF = startSt[1];
+  var errSt = useState(''); var err = errSt[0], setErr = errSt[1];
+
+  function set(k, v) {
+    setF(function (prev) { var c = Object.assign({}, prev); c[k] = v; return c; });
+  }
+
+  function submit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var n = E.num(f.price), l = E.num(f.life), r = E.num(f.rentMonth);
+    if (!String(f.name).trim()) return setErr('Give the equipment a name so it can be identified in the library.');
+    if (!(n > 0)) return setErr('Purchase price must be greater than zero.');
+    if (!(l > 0)) return setErr('Economic life must be greater than zero years.');
+    if (!(r > 0)) return setErr('A monthly rental rate is needed for the rent alternative to be costed.');
+    if (E.num(f.resale) < 0) return setErr('Resale value cannot be negative.');
+    if (E.num(f.resale) > n) return setErr('Resale value cannot exceed the purchase price.');
+    setErr('');
+    props.onSave({
+      id: init.id || ('custom-' + Date.now()),
+      custom: true,
+      icon: f.icon,
+      name: String(f.name).trim(),
+      spec: String(f.spec).trim() || 'User-entered equipment',
+      capacity: String(f.capacity).trim() || 'as specified',
+      price: n,
+      resale: E.num(f.resale),
+      life: l,
+      maint: E.num(f.maint),
+      maintEsc: E.num(f.maintEsc),
+      insurance: E.num(f.insurance),
+      reg: E.num(f.reg),
+      storage: E.num(f.storage),
+      hours: E.num(f.hours) || 2000,
+      rentMonth: r,
+      rentDay: Math.round(r / 26),
+      leaseMonth: E.num(f.leaseMonth),
+      mob: E.num(f.mob),
+      fuelPerHr: 0
+    });
+  }
+
+  return html`<form className="card equip-form" onSubmit=${submit}>
+    <div className="card__head">
+      <div>
+        <div className="kicker">${props.isNew ? 'New record' : 'Editing record'}</div>
+        <h3>${props.isNew ? 'Add your own equipment' : 'Edit ' + (init.name || 'equipment')}</h3>
+      </div>
+      <${Badge} tone="warn">Saved in this browser<//>
+    </div>
+
+    ${err ? html`<div className="note note--err" style=${{ marginBottom: '14px' }}>${err}</div>` : null}
+
+    <div className="equip-form__grid">
+      <${TextIn} label="Equipment name" value=${f.name} onChange=${function (x) { set('name', x); }} />
+      <${TextIn} label="Description / make-model" value=${f.spec} onChange=${function (x) { set('spec', x); }} />
+      <${SelIn} label="Machine type" value=${f.icon} options=${EQ_ICON_OPTS} onChange=${function (x) { set('icon', x); }} />
+      <${TextIn} label="Capacity" value=${f.capacity} onChange=${function (x) { set('capacity', x); }}
+        hint="Used for the service-equivalence check." />
+    </div>
+
+    <div className="equip-form__grid">
+      <${NumIn} label="Purchase price" unit="₹ delivered" value=${f.price} min="0" onChange=${function (x) { set('price', x); }} />
+      <${NumIn} label="Resale value" unit="₹ at end" value=${f.resale} min="0" onChange=${function (x) { set('resale', x); }} />
+      <${NumIn} label="Economic life" unit="yrs" value=${f.life} min="0.5" onChange=${function (x) { set('life', x); }} />
+      <${NumIn} label="Hours per year" unit="h/yr" value=${f.hours} min="1" max="8760" onChange=${function (x) { set('hours', x); }} />
+      <${NumIn} label="Maintenance, year 1" unit="₹/yr" value=${f.maint} min="0" onChange=${function (x) { set('maint', x); }} />
+      <${NumIn} label="Maint. escalation" unit="% / yr" value=${f.maintEsc} onChange=${function (x) { set('maintEsc', x); }} />
+      <${NumIn} label="Insurance" unit="₹/yr" value=${f.insurance} min="0" onChange=${function (x) { set('insurance', x); }} />
+      <${NumIn} label="Registration" unit="₹/yr" value=${f.reg} min="0" onChange=${function (x) { set('reg', x); }} />
+      <${NumIn} label="Storage / yard" unit="₹/yr" value=${f.storage} min="0" onChange=${function (x) { set('storage', x); }} />
+      <${NumIn} label="Rental rate" unit="₹ per month" value=${f.rentMonth} min="0" onChange=${function (x) { set('rentMonth', x); }} />
+      <${NumIn} label="Lease payment" unit="₹ per month" value=${f.leaseMonth} min="0" onChange=${function (x) { set('leaseMonth', x); }} />
+      <${NumIn} label="Mob + demob" unit="₹ each way" value=${f.mob} min="0" onChange=${function (x) { set('mob', x); }} />
+    </div>
+
+    <div className="equip-form__foot">
+      <button type="submit" className="btn btn--dark btn--sm">${props.isNew ? 'Add to library' : 'Save changes'}</button>
+      <button type="button" className="btn btn--line btn--sm" onClick=${props.onCancel}>Cancel</button>
+      ${props.isNew ? null : html`<button type="button" className="btn btn--line btn--sm" style=${{ marginLeft: 'auto', color: 'var(--red)' }}
+        onClick=${function () { props.onDelete(init); }}>Remove from library</button>`}
+      <div className="tiny dim" style=${{ flexBasis: '100%', marginTop: '8px' }}>
+        These figures only seed the input form when you pick the machine \u2014 every field stays editable on the inputs page.
+        Records are stored in this browser's local storage, so they survive a refresh but not a different device.
+      </div>
+    </div>
+  </form>`;
+}
+
+/* ----------------------------------------------------------- dashboard */
+function Dashboard(props) {
+  var inputs = props.inputs;
+  var res = props.results;
+  var scns = props.scns;
+  var eq = E.equipmentById(inputs.project.equipmentId);
+
+  return html`<div>
+    <section className="hero">
+      <div className="wrap hero__inner">
+        <div>
+          <div className="hero__eyebrow">Construction Economics & Finance</div>
+          <h1>Own it, lease it or hire it —<br/>and know the <em>annual cost</em> of each.</h1>
+          <p className="hero__lede">
+            EquipWise converts every acquisition route into one comparable number: the
+            Equivalent Uniform Annual Cost. Enter your project, financing and rate assumptions,
+            and the engine discounts each alternative's full cash-flow stream to a common
+            annual equivalent.
+          </p>
+          <div className="hero__cta">
+            <button className="btn btn--primary" onClick=${function () { props.go('inputs'); }}>
+              Start Economic Analysis
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+            </button>
+            <button className="btn btn--ghost" onClick=${function () { props.go('results'); }}>View current results</button>
+          </div>
+        </div>
+        <div className="hero__panel">
+          <h4>Live snapshot \u2014 ${eq.name}</h4>
+          ${['buy', 'lease', 'rent'].map(function (k) {
+            return html`<div key=${k} className=${'hero__row' + (res.best === k ? ' win' : '')}>
+              <span>${ALTNAME(k)} \u00b7 EUAC</span>
+              <span>${INR(res[k].euac)}${res.best === k ? ' \u00b7 lowest' : ''}</span>
+            </div>`;
+          })}
+          <div className="hero__row" style=${{ borderTop: '1px solid rgba(255,255,255,.2)', marginTop: '6px', paddingTop: '10px' }}>
+            <span>Analysis period / rate</span>
+            <span>${fx(res.n, 2)} yr \u00b7 ${pctf(res.i * 100)}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div className="wrap page">
+      <div className="section">
+        <div className="steps">
+          <div className="step">
+            <div className="step__n">01 / BUILD THE STREAM</div>
+            <h4>Lay out each cash flow</h4>
+            <p>Purchase price or lease rentals, maintenance escalation, insurance, deposits, mob-demob and resale are placed at their true timing \u2014 yearly or monthly.</p>
+          </div>
+          <div className="step">
+            <div className="step__n">02 / DISCOUNT TO TODAY</div>
+            <h4>Present worth of cost</h4>
+            <p>Every flow is discounted at the effective rate to give PW. Monthly lease and rental flows use the equivalent monthly rate, not a divided annual rate.</p>
+          </div>
+          <div className="step">
+            <div className="step__n">03 / ANNUALISE</div>
+            <h4>EUAC = PW \u00d7 (A/P, i, n)</h4>
+            <p>Multiplying by the capital recovery factor gives one rupee figure per year for each option, over an identical study period.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="section">
+        <${SecHead} label="Equipment library" title="Choose the machine you are evaluating"
+          sub="Seven sample categories with illustrative cost structures, plus any machines you add yourself. Selecting a card loads its cost structure into the input form; you can then adjust every figure there."
+          right=${html`<div className="pill-row">
+            <button className="btn btn--line btn--sm" onClick=${props.onNew}>+ Add equipment</button>
+            <button className="btn btn--line btn--sm" onClick=${function () { props.go('inputs'); }}>Open input form</button>
+          </div>`} />
+        <div className="grid g-auto">
+          ${E.allEquipment().map(function (q) {
+            var mine = !!q.custom;
+            return html`<div key=${q.id} role="button" tabIndex="0"
+              className=${'equip' + (q.id === inputs.project.equipmentId ? ' on' : '')}
+              onClick=${function () { props.pickEquipment(q.id); }}
+              onKeyDown=${function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); props.pickEquipment(q.id); } }}>
+              ${mine ? html`<div className="equip__actions">
+                <button type="button" onClick=${function (e) { e.stopPropagation(); props.onEdit(q); }}>Edit</button>
+                <button type="button" className="del" onClick=${function (e) { e.stopPropagation(); props.onDelete(q); }}>Del</button>
+              </div>` : null}
+              <${EquipIcon} id=${q.icon || q.id} />
+              <div>
+                <div className="equip__name">${q.name}${mine ? html`<span className="equip__tag">Yours</span>` : null}</div>
+                <div className="equip__spec">${q.spec}</div>
+              </div>
+              <div className="equip__price">${mine ? 'Your price' : 'Illustrative price'} <b>${COMP(q.price)}</b><br/>
+                <span className="tiny">Rent ${COMP(q.rentMonth)}/month</span>
+              </div>
+            </div>`;
+          })}
+          <button type="button" className="equip equip--add" onClick=${props.onNew}>
+            <div className="plus">+</div>
+            <div className="equip__name" style=${{ fontSize: '13.5px' }}>Add your equipment</div>
+            <div className="equip__spec">Enter your own machine, price, resale and rates</div>
+          </button>
+        </div>
+        ${props.editing ? html`<div style=${{ marginTop: '16px' }}>
+          <${EquipmentEditor} initial=${props.editing.record || null} isNew=${props.editing.mode === 'new'}
+            onSave=${props.onSave} onCancel=${props.onCancel} onDelete=${props.onDelete} />
+        </div>` : null}
+      </div>
+
+      <div className="section">
+        <div className="grid g2">
+          <${Card} className="card--tint">
+            <div className="card__head">
+              <div>
+                <div className="kicker">Saved scenarios</div>
+                <h3>Recently analysed</h3>
+              </div>
+              <${Badge} tone="muted">${scns.length} saved<//>
+            </div>
+            ${scns.length === 0
+              ? html`<p className="dim small" style=${{ margin: 0 }}>
+                  No scenarios saved yet. Run an analysis and use <b>Save scenario</b> on the results page \u2014
+                  scenarios are kept in this browser's local storage.
+                </p>`
+              : html`<div>${scns.slice(0, 4).map(function (s) {
+                  return html`<div key=${s.id} className="scn">
+                    <div>
+                      <div className="scn__name">${s.name}</div>
+                      <div className="scn__meta">${s.equipment} \u00b7 ${s.duration} \u00b7 best: ${ALTNAME(s.best)} \u00b7 ${s.date}</div>
+                    </div>
+                    <div style=${{ display: 'flex', gap: '6px' }}>
+                      <button className="btn btn--line btn--sm" onClick=${function () { props.loadScenario(s); }}>Load</button>
+                      <button className="btn btn--line btn--sm" onClick=${function () { props.deleteScenario(s.id); }}>Remove</button>
+                    </div>
+                  </div>`;
+                })}</div>`}
+          <//>
+
+          <${Card}>
+            <div className="card__head">
+              <div>
+                <div className="kicker">Method note</div>
+                <h3>Why EUAC and not just total cost</h3>
+              </div>
+            </div>
+            <p className="small" style=${{ color: 'var(--ink-2)' }}>
+              Buying front-loads a large capital outflow and leaves a residual asset; renting spreads
+              small payments and leaves nothing. Comparing raw totals is meaningless because the
+              amounts land at different times and the alternatives have different asset endings.
+              EUAC removes both problems: every stream is discounted to present worth and then spread
+              evenly across the study period, so the three numbers are directly comparable.
+            </p>
+            <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+              The lowest EUAC is preferred <b>only if all alternatives deliver the same service</b>
+              \u2014 same capacity, availability and condition. Costs identical under all three
+              (site fuel, operator wages, general overhead) are excluded, because they cannot change
+              the ranking.
+            </p>
+          <//>
+        </div>
+      </div>
+
+      <div className="note note--info">
+        <b>Scope of this model.</b> All figures are in Indian rupees and follow the Indian numbering
+        system. The engine performs a cost-only comparison (a cost analysis, not a revenue analysis),
+        so no income or productivity benefit is modelled \u2014 only the cost of securing the machine's service.
+      </div>
+    </div>
+  </div>`;
+}
+
+/* -------------------------------------------------------------- inputs */
+function InputsPage(props) {
+  var inp = props.inputs, up = props.update, v = props.validation;
+  var q = E.equipmentById(inp.project.equipmentId);
+
+  function setDuration(val, unit) {
+    props.setDuration(val, unit);
+  }
+
+  return html`<div className="wrap page">
+    <${SecHead} label="Step 1 of 3" title="Project, equipment and economic inputs"
+      sub="Every field feeds the engine directly. Nothing on the results page is hard-coded."
+      right=${html`<div className="pill-row">
+        <button className="btn btn--line btn--sm" onClick=${props.resetDefaults}>Reset to illustrative sample</button>
+        <button className="btn btn--dark btn--sm" onClick=${function () { props.go('results'); }}>Calculate EUAC</button>
+      </div>`} />
+
+    ${v.errors.length > 0 ? html`<div className="note note--err" style=${{ marginBottom: '18px' }}>
+      <b>Fix these before the results are meaningful:</b>
+      <ul>${v.errors.map(function (m, k) { return html`<li key=${k}>${m}</li>`; })}</ul>
+    </div>` : null}
+    ${v.warnings.length > 0 ? html`<div className="note" style=${{ marginBottom: '18px' }}>
+      <b>Assumption checks:</b>
+      <ul>${v.warnings.map(function (m, k) { return html`<li key=${k}>${m}</li>`; })}</ul>
+    </div>` : null}
+
+    <div className="split">
+      <div className="grid" style=${{ gap: '16px' }}>
+
+        <${Card}>
+          <div className="card__head">
+            <div><div className="kicker">A</div><h3>Project information</h3></div>
+            <${Badge} tone="buy">${q.name}<//>
+          </div>
+          <${TextIn} label="Project name" value=${inp.project.name}
+            onChange=${function (x) { up('project.name', x); }}
+            hint="Appears on the dashboard, saved scenarios and the PDF report cover." />
+
+          <${SelIn} label="Selected equipment" value=${inp.project.equipmentId}
+            options=${E.allEquipment().map(function (x) { return { v: x.id, t: x.name + ' \u2014 ' + x.spec + (x.custom ? '  (yours)' : '') }; })}
+            onChange=${props.pickEquipment}
+            hint="Switching machine reloads that record's cost structure. Add your own from the dashboard library." />
+
+          <div className="field__row">
+            <${NumIn} label="Project duration" unit=${inp.project.durationUnit === 'months' ? 'months' : 'years'}
+              value=${inp.project.durationValue} min="0.25"
+              onChange=${function (x) { setDuration(x, inp.project.durationUnit); }} />
+            <${SelIn} label="Duration unit" value=${inp.project.durationUnit}
+              options=${[{ v: 'months', t: 'Months' }, { v: 'years', t: 'Years' }]}
+              onChange=${function (u) { setDuration(inp.project.durationValue, u); }} />
+          </div>
+
+          <div className="field__row">
+            <${NumIn} label="Operating hours per year" unit="h/yr available" value=${inp.project.hoursPerYear} min="1" max="8760"
+              onChange=${function (x) { up('project.hoursPerYear', x); }} />
+            <${NumIn} label="Utilization" unit="% of available hours" value=${inp.project.utilizationPct} min="0" max="100"
+              onChange=${function (x) { up('project.utilizationPct', x); }} />
+          </div>
+          <div className="field__hint" style=${{ marginTop: '-4px', marginBottom: '10px' }}>
+            Productive hours used for per-hour costing: <b className="mono">${Math.round(res0Hours(inp))} h/yr</b>
+          </div>
+
+          <div className="field__row">
+            <${NumIn} label="Analysis period" unit="years" value=${inp.project.analysisYears} min="0.08" step="0.25"
+              onChange=${function (x) { props.setAnalysisYears(x); }}
+              hint="The common study period. All three alternatives are annualised over exactly this n." />
+            <${NumIn} label="Minimum required capacity" unit=${q.capacity} value=${inp.project.minCapacity} min="0"
+              onChange=${function (x) { up('project.minCapacity', x); }}
+              hint="Service-equivalence check. Alternatives are only comparable at equal capacity." />
+          </div>
+        <//>
+
+        <${Card}>
+          <div className="card__head">
+            <div><div className="kicker">B</div><h3>Economic parameters</h3></div>
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Discount rate (MARR)" unit="% effective, per year" value=${inp.econ.discountRate} min="0"
+              onChange=${function (x) { up('econ.discountRate', x); }}
+              hint="Annual effective rate. Zero is allowed and handled explicitly." />
+            <${NumIn} label="Inflation rate" unit="% per year" value=${inp.econ.inflationRate}
+              onChange=${function (x) { up('econ.inflationRate', x); }}
+              hint="Escalates operating, insurance and storage costs. For a real-terms analysis set this to 0." />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Tax rate" unit="% (after-tax only)" value=${inp.econ.taxRate} min="0" max="99"
+              onChange=${function (x) { up('econ.taxRate', x); }} />
+            <div>
+              <div className="field__label"><span>Cash-flow timing</span></div>
+              <${Seg} value=${inp.econ.timing}
+                options=${[{ v: 'end', t: 'End of period' }, { v: 'mid', t: 'Mid-period' }]}
+                onChange=${function (x) { up('econ.timing', x); }} />
+              <div className="field__hint">Applies to recurring costs; capital outlays and salvage stay at period boundaries.</div>
+            </div>
+          </div>
+          <${Toggle} label="After-tax analysis" value=${inp.econ.afterTax}
+            onChange=${function (x) { up('econ.afterTax', x); }}
+            hint="Recurring costs are tax-effected; buying also earns a straight-line depreciation shield on (price \u2212 residual)." />
+
+          <div className="note note--info" style=${{ marginTop: '8px' }}>
+            <b>Rate convention.</b> Enter an <i>effective annual</i> rate. Monthly lease and rental flows are
+            discounted at <span className="mono">i\u2098 = (1 + i)^(1/12) \u2212 1</span>, not at i/12, so the
+            annual equivalent stays exact.
+          </div>
+        <//>
+
+        <${Card}>
+          <div className="card__head">
+            <div><div className="kicker">C</div><h3>Buy option \u2014 ownership</h3></div>
+            <${Badge} tone="buy">Capital + ownership<//>
+          </div>
+
+          <${NumIn} label="Initial purchase price (P)" unit="\u20b9 delivered, ex-GST" value=${inp.buy.price} min="0"
+            onChange=${function (x) { up('buy.price', x); }} />
+
+          <div className="field__row">
+            <${NumIn} label="Down payment" unit="% of price" value=${inp.buy.downPaymentPct} min="0" max="100"
+              onChange=${function (x) { up('buy.downPaymentPct', x); }} />
+            <${NumIn} label="Loan interest rate" unit="% effective, per year" value=${inp.buy.loanRate} min="0"
+              onChange=${function (x) { up('buy.loanRate', x); }} />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Loan tenure" unit="years" value=${inp.buy.loanTenureYears} min="0" step="0.5"
+              onChange=${function (x) { up('buy.loanTenureYears', x); }} />
+            <div>
+              <div className="field__label"><span>Financing basis</span></div>
+              <${Seg} value=${inp.buy.financingView}
+                options=${[{ v: 'economic', t: 'Asset cost' }, { v: 'owner', t: 'Owner cash flow' }]}
+                onChange=${function (x) { up('buy.financingView', x); }} />
+            </div>
+          </div>
+          <div className="field__hint" style=${{ marginTop: '-6px', marginBottom: '12px' }}>
+            <b>Asset cost</b> discounts the purchase price and resale (financing is a way of paying, not a cost).
+            <b> Owner cash flow</b> discounts the down payment, loan repayments and net sale proceeds instead.
+            The engine never charges both \u2014 at a loan rate equal to the discount rate the two agree exactly.
+          </div>
+
+          <div className="field__row">
+            <${NumIn} label="Maintenance yr 1" unit="\u20b9/yr" value=${inp.buy.maintenanceYear1} min="0"
+              onChange=${function (x) { up('buy.maintenanceYear1', x); }} />
+            <${NumIn} label="Maint. escalation" unit="% / yr" value=${inp.buy.maintenanceEscalationPct}
+              onChange=${function (x) { up('buy.maintenanceEscalationPct', x); }} />
+          </div>
+          <div className="field__row field__row--3">
+            <${NumIn} label="Insurance" unit="\u20b9/yr" value=${inp.buy.insuranceAnnual} min="0"
+              onChange=${function (x) { up('buy.insuranceAnnual', x); }} />
+            <${NumIn} label="Registration" unit="\u20b9/yr" value=${inp.buy.registrationAnnual} min="0"
+              onChange=${function (x) { up('buy.registrationAnnual', x); }} />
+            <${NumIn} label="Storage / yard" unit="\u20b9/yr" value=${inp.buy.storageAnnual} min="0"
+              onChange=${function (x) { up('buy.storageAnnual', x); }} />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Other ownership cost" unit="\u20b9/yr" value=${inp.buy.otherAnnual} min="0"
+              onChange=${function (x) { up('buy.otherAnnual', x); }} />
+            <${NumIn} label="Fuel + operator (if it differs)" unit="\u20b9 per productive hour" value=${inp.buy.operatingCostPerHour} min="0"
+              onChange=${function (x) { up('buy.operatingCostPerHour', x); }}
+              hint="Leave at 0 when the same cost applies to all three." />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Expected resale / salvage (S)" unit="\u20b9 at end of analysis" value=${inp.buy.resaleValue} min="0"
+              onChange=${function (x) { up('buy.resaleValue', x); }}
+              hint=${'That is ' + pctf(inp.buy.price > 0 ? inp.buy.resaleValue / inp.buy.price * 100 : 0) + ' of the purchase price.'} />
+            <${NumIn} label="Economic life" unit="yrs" value=${inp.buy.economicLifeYears} min="0.5"
+              onChange=${function (x) { up('buy.economicLifeYears', x); }} />
+          </div>
+          <${Toggle} label="Model replacement at end of economic life" value=${inp.buy.replacement}
+            onChange=${function (x) { up('buy.replacement', x); }}
+            hint="If the analysis period exceeds the economic life, a replacement machine is bought and the residual is realised at each cycle end." />
+        <//>
+
+        <${Card}>
+          <div className="card__head">
+            <div><div className="kicker">D</div><h3>Lease option</h3></div>
+            <${Badge} tone="lease">Contract hire<//>
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Lease payment" unit="\u20b9 per period" value=${inp.lease.payment} min="0"
+              onChange=${function (x) { up('lease.payment', x); }} />
+            <${SelIn} label="Payment frequency" value=${inp.lease.paymentFrequency}
+              options=${[{ v: 'monthly', t: 'Monthly' }, { v: 'annual', t: 'Annual' }]}
+              onChange=${function (x) { up('lease.paymentFrequency', x); }} />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Advance payment / fee" unit="\u20b9 at signing" value=${inp.lease.advancePayment} min="0"
+              onChange=${function (x) { up('lease.advancePayment', x); }} />
+            <${NumIn} label="Lease term" unit="months" value=${inp.lease.termMonths} min="1"
+              onChange=${function (x) { up('lease.termMonths', x); }} />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Escalation in lease payment" unit="% per year" value=${inp.lease.escalationPct}
+              onChange=${function (x) { up('lease.escalationPct', x); }} />
+            <${SelIn} label="Maintenance responsibility" value=${inp.lease.maintenanceResponsibility}
+              options=${[{ v: 'lessor', t: 'Lessor (included)' }, { v: 'lessee', t: 'Lessee (you pay)' }]}
+              onChange=${function (x) { up('lease.maintenanceResponsibility', x); }} />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Lessee maintenance (if borne by you)" unit="\u20b9/yr" value=${inp.lease.lesseeMaintenanceAnnual} min="0"
+              onChange=${function (x) { up('lease.lesseeMaintenanceAnnual', x); }}
+              hint=${inp.lease.maintenanceResponsibility === 'lessor' ? 'Ignored while the lessor carries maintenance.' : ''} />
+            <${NumIn} label="Lessee insurance" unit="\u20b9/yr" value=${inp.lease.lesseeInsuranceAnnual} min="0"
+              onChange=${function (x) { up('lease.lesseeInsuranceAnnual', x); }} />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Refundable security deposit" unit="\u20b9" value=${inp.lease.deposit} min="0"
+              onChange=${function (x) { up('lease.deposit', x); }} />
+            <${NumIn} label="Deposit returned in month" unit="month no." value=${inp.lease.depositReturnMonth} min="1"
+              onChange=${function (x) { up('lease.depositReturnMonth', x); }}
+              hint="Deposit out and back in are discounted separately at their own dates." />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="End-of-lease purchase / termination" unit="\u20b9 at term end" value=${inp.lease.terminationPayment} min="0"
+              onChange=${function (x) { up('lease.terminationPayment', x); }} />
+            <${NumIn} label="Fuel + operator (if it differs)" unit="\u20b9 per productive hour" value=${inp.lease.operatingCostPerHour} min="0"
+              onChange=${function (x) { up('lease.operatingCostPerHour', x); }} />
+          </div>
+        <//>
+
+        <${Card}>
+          <div className="card__head">
+            <div><div className="kicker">E</div><h3>Rent option</h3></div>
+            <${Badge} tone="rent">Short-term hire<//>
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Rental rate" unit="\u20b9 per period" value=${inp.rent.rateValue} min="0"
+              onChange=${function (x) { up('rent.rateValue', x); }} />
+            <${SelIn} label="Rate basis" value=${inp.rent.rateBasis}
+              options=${[{ v: 'day', t: 'Per day' }, { v: 'week', t: 'Per week' }, { v: 'month', t: 'Per month' }]}
+              onChange=${function (x) { up('rent.rateBasis', x); }} />
+          </div>
+          <div className="field__row field__row--3">
+            <${NumIn} label="Billable days per month" unit="days (daily rate only)" value=${inp.rent.daysPerMonth} min="1" max="31"
+              onChange=${function (x) { up('rent.daysPerMonth', x); }}
+              hint=${'Monthly equivalent: ' + INR(E.monthlyRentalRate(inp.rent))} />
+            <${NumIn} label="Required hire period" unit="months (0 = study period)" value=${inp.rent.durationMonths} min="0"
+              onChange=${function (x) { up('rent.durationMonths', x); }} />
+            <${NumIn} label="Minimum hire period" unit="months" value=${inp.rent.minHireMonths} min="0"
+              onChange=${function (x) { up('rent.minHireMonths', x); }} />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Mob + demob" unit="\u20b9 each way" value=${inp.rent.mobDemob} min="0"
+              onChange=${function (x) { up('rent.mobDemob', x); }} />
+            <${NumIn} label="Rental escalation" unit="% per year" value=${inp.rent.escalationPct}
+              onChange=${function (x) { up('rent.escalationPct', x); }} />
+          </div>
+          <div className="field__row">
+            <${NumIn} label="Overtime / excess-hour charge" unit="\u20b9 per month" value=${inp.rent.overtimePerMonth} min="0"
+              onChange=${function (x) { up('rent.overtimePerMonth', x); }} />
+            <${NumIn} label="Downtime / replacement allowance" unit="% of rental cost" value=${inp.rent.downtimePct} min="0" max="100"
+              onChange=${function (x) { up('rent.downtimePct', x); }}
+              hint="Extra hire charged while the machine is down or being replaced." />
+          </div>
+          <div className="field__row">
+            <${Toggle} label="Operator included in rate" value=${inp.rent.operatorIncluded}
+              onChange=${function (x) { up('rent.operatorIncluded', x); }} />
+            <${Toggle} label="Fuel included in rate" value=${inp.rent.fuelIncluded}
+              onChange=${function (x) { up('rent.fuelIncluded', x); }} />
+          </div>
+          ${(inp.rent.fuelIncluded === false || inp.rent.operatorIncluded === false) ? html`
+            <${NumIn} label="Renter-paid fuel / operator" unit="\u20b9 per productive hour" value=${inp.rent.renterOperatingCostPerHour} min="0"
+              onChange=${function (x) { up('rent.renterOperatingCostPerHour', x); }} />` : null}
+        <//>
+
+      </div>
+
+      <div className="sticky-rail">
+        <${Card} className="card--tint">
+          <div className="kicker" style=${{ fontFamily: 'var(--f-mono)', fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-4)' }}>Live preview</div>
+          <h3 style=${{ margin: '6px 0 12px' }}>Annual equivalent</h3>
+          ${['buy', 'lease', 'rent'].map(function (k) {
+            var r = props.results[k];
+            return html`<div key=${k} style=${{ padding: '9px 0', borderBottom: '1px dashed var(--line)' }}>
+              <div style=${{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span className="small dim">${ALTNAME(k)}</span>
+                <span className="num" style=${{ fontWeight: 600, color: props.results.best === k ? 'var(--green)' : 'var(--navy-800)' }}>${INR(r.euac)}</span>
+              </div>
+              <div className="tiny dim" style=${{ textAlign: 'right' }}>${INR(r.costPerHour)} per productive hour</div>
+            </div>`;
+          })}
+          <div style=${{ marginTop: '12px', fontSize: '12.5px' }}>
+            <${Badge} tone="win">${ALTNAME(props.results.best)} is lowest<//>
+            <div className="tiny dim" style=${{ marginTop: '6px' }}>
+              ${COMP(props.results.savings)} per year cheaper than ${ALTNAME(props.results.secondBest)}.
+            </div>
+          </div>
+          <div style=${{ marginTop: '14px', display: 'grid', gap: '7px' }}>
+            <button className="btn btn--primary btn--sm" style=${{ justifyContent: 'center' }} onClick=${function () { props.go('results'); }}>Calculate and view results</button>
+            <button className="btn btn--line btn--sm" style=${{ justifyContent: 'center' }} onClick=${function () { props.go('breakeven'); }}>Break-even analysis</button>
+          </div>
+        <//>
+      </div>
+    </div>
+  </div>`;
+}
+
+function res0Hours(inp) { return E.productiveHours(inp); }
+
+</script>
+<script>
+/* =========================================================================
+   EquipWise — UI part 2: results, break-even, sensitivity, report, root
+   ========================================================================= */
+
+/* --------------------------------------------------------- cash flow tbl */
+function CashFlowTable(props) {
+  var alt = props.alt;
+  var rows = alt.table;
+  var maxRows = props.maxRows || 14;
+  var shown = rows;
+  var truncated = false;
+  if (rows.length > maxRows) {
+    shown = rows.slice(0, maxRows - 1).concat([rows[rows.length - 1]]);
+    truncated = true;
+  }
+  return html`<div className="tbl-wrap">
+    <table className="tbl">
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Capital</th>
+          <th>Maint.</th>
+          <th>Fuel / oper.</th>
+          <th>Ownership</th>
+          <th>Lease / rent</th>
+          <th>Other</th>
+          <th>Salvage</th>
+          <th>Net flow</th>
+          <th>Discounted</th>
+          <th>Cumulative</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${shown.map(function (r, i) {
+          var gap = truncated && i === shown.length - 2;
+          return html`<tr key=${'r' + i}>
+            <td>${gap ? '\u22ee' : (r.year === 0 ? '0 (now)' : 'Year ' + r.year)}</td>
+            <td className="n">${gap ? '' : INR(r.capital)}</td>
+            <td className="n">${gap ? '' : INR(r.maint)}</td>
+            <td className="n">${gap ? '' : INR(r.oper)}</td>
+            <td className="n">${gap ? '' : INR(r.own)}</td>
+            <td className="n">${gap ? '' : INR(r.lease)}</td>
+            <td className="n">${gap ? '' : INR(r.other)}</td>
+            <td className="n">${gap ? '' : (r.salvage ? INR(r.salvage) : '\u2014')}</td>
+            <td className="n">${gap ? '' : INR(r.total)}</td>
+            <td className="n">${gap ? '' : INR(r.discounted)}</td>
+            <td className="n">${gap ? '' : INR(r.cumDiscounted)}</td>
+          </tr>`;
+        })}
+        <tr className="row-strong">
+          <td>Present worth</td>
+          <td colSpan="7" className="lbl" style=${{ textAlign: 'right' }}>Sum of discounted flows at ${pctf(props.rate * 100)}</td>
+          <td className="n">${INR(alt.pw)}</td>
+          <td className="n">${INR(alt.pw)}</td>
+          <td className="n">${INR(alt.pw)}</td>
+        </tr>
+        <tr className="row-strong">
+          <td>EUAC</td>
+          <td colSpan="9" className="lbl" style=${{ textAlign: 'right' }}>PW \u00d7 (A/P, ${pctf(props.rate * 100)}, ${fx(props.n, 2)}) = PW \u00d7 ${kfactor(alt.factor)}</td>
+          <td className="n">${INR(alt.euac)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div className="tbl-foot">
+      ${alt.granularity === 'monthly'
+        ? 'Monthly payments are discounted individually at the equivalent monthly rate, then grouped into year bands for display.'
+        : 'Annual flows are prorated where the analysis period ends part-way through a year.'}
+      ${truncated ? ' Middle years omitted for length.' : ''}
+    </div>
+  </div>`;
+}
+
+/* ------------------------------------------------------------- results */
+function ResultsPage(props) {
+  var inp = props.inputs, res = props.results, v = props.validation;
+  var be = props.be, rateSweep = props.rateSweep, utilSweep = props.utilSweep;
+  var [cfTab, setCfTab] = useState('buy');
+  var eq = E.equipmentById(inp.project.equipmentId);
+
+  if (v.errors.length > 0) {
+    return html`<div className="wrap page">
+      <${SecHead} label="Results" title="The inputs are not yet valid" />
+      <div className="note note--err">
+        <b>The engine will not produce a result from inconsistent inputs.</b>
+        <ul>${v.errors.map(function (m, i) { return html`<li key=${i}>${m}</li>`; })}</ul>
+      </div>
+      <button className="btn btn--dark" style=${{ marginTop: '16px' }} onClick=${function () { props.go('inputs'); }}>Back to inputs</button>
+    </div>`;
+  }
+
+  var order = ['buy', 'lease', 'rent'];
+  var rankOf = {};
+  res.ranking.forEach(function (k, i) { rankOf[k] = i + 1; });
+
+  var tableRows = [
+    { l: 'Initial cash requirement', s: 'Outlay at signing', v: [res.initial.buy, res.initial.lease, res.initial.rent], money: true },
+    { l: 'Present worth of all costs', s: 'Discounted to today at ' + pctf(res.i * 100), v: [res.buy.pw, res.lease.pw, res.rent.pw], money: true },
+    { l: 'Equivalent annual cost (EUAC)', s: 'PW \u00d7 (A/P, i, n)', v: [res.buy.euac, res.lease.euac, res.rent.euac], money: true, strong: true, best: true },
+    { l: 'Annual maintenance cost', s: 'Average nominal per year', v: [res.buy.annualMaintenance, res.lease.annualMaintenance, res.rent.annualMaintenance], money: true },
+    { l: 'Annual lease / rental charge', s: 'Average nominal per year', v: [0, res.lease.annualLeaseRent, res.rent.annualLeaseRent], money: true, zeroDash: true },
+    { l: 'Annual fuel + operator cost', s: 'Only where it differs between options', v: [res.buy.annualOperating, res.lease.annualOperating, res.rent.annualOperating], money: true },
+    { l: 'Terminal resale value', s: 'Realised at the end of the period', v: [inp.buy.resaleValue, inp.lease.terminationPayment, 0], money: true, zeroDash: true, inflow: true },
+    { l: 'Cost per productive hour', s: 'EUAC \u00f7 ' + Math.round(res.hours) + ' productive h/yr', v: [res.buy.costPerHour, res.lease.costPerHour, res.rent.costPerHour], money: true, best: true, strong: true },
+    { l: 'Rank', s: '1 = lowest EUAC', v: [rankOf.buy, rankOf.lease, rankOf.rent], rank: true }
+  ];
+
+  return html`<div className="wrap page">
+    <${SecHead} label="Step 2 of 3 \u00b7 Results"
+      title=${inp.project.name || 'Economic comparison'}
+      sub=${eq.name + ' \u00b7 ' + fx(res.n, 2) + ' year study period \u00b7 ' + pctf(res.i * 100) + ' effective discount rate \u00b7 ' + Math.round(res.hours) + ' productive hours per year'}
+      right=${html`<div className="pill-row">
+        <button className="btn btn--line btn--sm" onClick=${function () { props.go('inputs'); }}>Edit inputs</button>
+        <button className="btn btn--line btn--sm" onClick=${props.saveScenario}>Save scenario</button>
+        <button className="btn btn--dark btn--sm" onClick=${function () { props.go('report'); }}>Generate PDF report</button>
+      </div>`} />
+
+    <div className="grid g4" style=${{ marginBottom: '18px' }}>
+      ${order.map(function (k) {
+        var isWin = res.best === k;
+        return html`<div key=${k} className=${'card stat stat--' + (isWin ? 'win' : k)}>
+          <div style=${{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="stat__k">EUAC \u00b7 ${ALTNAME(k)}</span>
+            ${isWin ? html`<${Badge} tone="win">Lowest<//>` : html`<${Badge} tone="muted">+${COMP(res[k].euac - res.bestEuac)}<//>`}
+          </div>
+          <div className="stat__v">${INR(res[k].euac)}<small> /yr</small></div>
+          <div className="stat__m">${INR(res[k].costPerHour)} per productive hour \u00b7 PW ${COMP(res[k].pw)}</div>
+        </div>`;
+      })}
+      <div className="card stat stat--win" style=${{ background: 'linear-gradient(160deg,#0A1C31,#143454)', borderColor: '#143454' }}>
+        <div className="stat__k" style=${{ color: 'rgba(255,255,255,.6)' }}>Recommended</div>
+        <div className="stat__v" style=${{ color: '#fff' }}>${ALTNAME(res.best)}</div>
+        <div className="stat__m" style=${{ color: 'rgba(255,255,255,.75)' }}>
+          Saves ${INR(res.savings)}/yr (${pctf(res.savingsPct)}) against ${ALTNAME(res.secondBest)}
+        </div>
+      </div>
+    </div>
+
+    <div className="section">
+      <${SecHead} label="Decision" title="Why this option wins"
+        sub=${'All three routes are compared on an identical ' + fx(res.n, 2) + '-year basis at ' + pctf(res.i * 100) + ' effective annual discount rate.'} />
+      <div className="note note--ok">
+        <b>${ALTNAME(res.best) + ' has the lowest equivalent annual cost at ' + INR(res.bestEuac) + ' per year.'}</b>
+        ${' ' + 'That is ' + INR(res.savings) + ' per year less than ' + ALTNAME(res.secondBest) + ' (' + INR(res.secondEuac) +
+          ') and ' + INR(res.spread) + ' less than the most expensive route. Over the ' + fx(res.n, 2) +
+          '-year study period the present-worth advantage is ' + INR(res[res.worst].pw - res[res.best].pw) +
+          ' against ' + ALTNAME(res.worst) + '. ' + bestReason(res, inp)}
+      </div>
+    </div>
+
+    <div className="section">
+      <${SecHead} label="Comparison" title="Side-by-side financial comparison" />
+      <${Card} className="card--flush">
+        <div className="tbl-wrap">
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th className="col-buy">Buy</th>
+                <th className="col-lease">Lease</th>
+                <th className="col-rent">Rent</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows.map(function (row, i) {
+                var minIdx = row.best ? row.v.indexOf(Math.min.apply(null, row.v)) : -1;
+                return html`<tr key=${i} className=${row.strong ? 'row-strong' : ''}>
+                  <td className="lbl">${row.l}<small>${row.s}</small></td>
+                  ${row.v.map(function (val, j) {
+                    if (row.rank) return html`<td key=${j} className="n">${val}</td>`;
+                    if (row.zeroDash && (!val || Math.abs(val) < 0.5)) return html`<td key=${j} className="n dim">\u2014</td>`;
+                    var cls = 'n' + (row.best && j === minIdx ? ' best' : '');
+                    var txt = INR(val);
+                    if (row.inflow) txt = '+' + txt;
+                    return html`<td key=${j} className=${cls}>${txt}</td>`;
+                  })}
+                </tr>`;
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="tbl-foot">
+          Terminal resale is shown as an inflow (a credit against cost). Lease shows any end-of-term purchase or
+          termination payment. Costs common to all three alternatives are excluded from the model by design.
+        </div>
+      <//>
+    </div>
+
+    <div className="section">
+      <${SecHead} label="Charts" title="Visual comparison" sub="Every chart is redrawn from the engine output whenever an input changes." />
+      <div className="grid g2" style=${{ marginBottom: '16px' }}>
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Chart 1</div><h3>Equivalent annual cost</h3></div></div>
+          <${ChartBox} config=${euacBarConfig(res)} height=${300} regKey="euac" />
+        <//>
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Chart 2</div><h3>Annual cost breakdown</h3></div></div>
+          <${ChartBox} config=${stackedConfig(res)} height=${300} regKey="stack" />
+          <div className="tiny dim" style=${{ marginTop: '8px' }}>Each bar sums exactly to that alternative's EUAC.</div>
+        <//>
+      </div>
+      <${Card} style=${{ marginBottom: '16px' }}>
+        <div className="card__head"><div><div className="kicker">Chart 3</div><h3>Cumulative discounted cost</h3></div></div>
+        <${ChartBox} config=${cumulativeConfig(res)} height=${310} regKey="cum" />
+        <div className="tiny dim" style=${{ marginTop: '8px' }}>The vertical gap between curves at year ${fx(res.n, 2)} is the present-worth advantage of the cheaper option.</div>
+      <//>
+      <div className="grid g2">
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Chart 4</div><h3>EUAC against study period</h3></div></div>
+          <${ChartBox} config=${durationConfig(be)} height=${280} regKey="dur" />
+        <//>
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Chart 5</div><h3>EUAC against discount rate</h3></div></div>
+          <${ChartBox} config=${sweepConfig(rateSweep, 'Discount rate (% per year)', function (x) { return x + '%'; })} height=${280} regKey="rate" />
+        <//>
+      </div>
+      <div className="grid g2" style=${{ marginTop: '16px' }}>
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Chart 6</div><h3>EUAC against utilization</h3></div></div>
+          <${ChartBox} config=${sweepConfig(utilSweep, 'Utilization (% of available hours)', function (x) { return x + '%'; })} height=${280} regKey="util" />
+          <div className="tiny dim" style=${{ marginTop: '8px' }}>
+            Utilization moves EUAC only through per-hour operating costs. Enter a per-hour fuel/operator figure
+            under each option to make idle time visible in the comparison.
+          </div>
+        <//>
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Per-hour view</div><h3>Cost per productive hour</h3></div></div>
+          <div className="tbl-wrap">
+            <table className="tbl" style=${{ minWidth: '380px' }}>
+              <thead><tr><th>Utilization</th><th>Buy</th><th>Lease</th><th>Rent</th></tr></thead>
+              <tbody>
+                ${[40, 60, 80, 100].map(function (u) {
+                  var w = E.deepClone(inp); w.project.utilizationPct = u;
+                  var rr = E.evaluate(w);
+                  return html`<tr key=${u}>
+                    <td>${u}% (${Math.round(rr.hours)} h/yr)</td>
+                    <td className="n">${INR(rr.buy.costPerHour)}</td>
+                    <td className="n">${INR(rr.lease.costPerHour)}</td>
+                    <td className="n">${INR(rr.rent.costPerHour)}</td>
+                  </tr>`;
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="tiny dim" style=${{ marginTop: '8px' }}>Ownership charges are spread over fewer hours as utilization falls \u2014 the classic argument for hiring on low-utilization sites.</div>
+        <//>
+      </div>
+    </div>
+
+    <div className="section">
+      <${SecHead} label="Calculation" title="How these numbers were produced"
+        sub="Shown with the actual figures from this scenario, so every result can be traced by hand." />
+      <div className="grid g2">
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Factors</div><h3>Discounting factors</h3></div></div>
+          <div className="formula">
+            <div><span className="cmt">// capital recovery</span></div>
+            <div>(A/P, i, n) = <span className="op">i(1+i)^n / ((1+i)^n - 1)</span></div>
+            <div>\u00A0\u00A0= (A/P, ${pctf(res.i * 100, 2)}, ${fx(res.n, 2)}) = <span className="hl">${kfactor(res.factor, 6)}</span></div>
+            <div style=${{ marginTop: '10px' }}><span className="cmt">// sinking fund</span></div>
+            <div>(A/F, i, n) = <span className="op">i / ((1+i)^n - 1)</span> = <span className="hl">${kfactor(E.af(res.i, res.n), 6)}</span></div>
+            <div style=${{ marginTop: '10px' }}><span className="cmt">// monthly equivalent rate</span></div>
+            <div>i&#8348; = (1 + i)^(1/12) - 1 = <span className="hl">${kfactor(E.periodRate(res.i, 12) * 100, 4)}%</span> per month</div>
+          </div>
+        <//>
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Buy</div><h3>Present worth to EUAC</h3></div></div>
+          <div className="formula">
+            <div>PW_B = P + <span className="op">\u03a3</span> C_t/(1+i)^t - S/(1+i)^n</div>
+            <div>\u00A0\u00A0\u00A0\u00A0= ${COMP(inp.buy.price)} + ${COMP(res.buy.pwParts.maint + res.buy.pwParts.own + res.buy.pwParts.oper)} - ${COMP(-res.buy.pwParts.salvage)}</div>
+            <div>\u00A0\u00A0\u00A0\u00A0= <span className="hl">${INR(res.buy.pw)}</span></div>
+            <div style=${{ marginTop: '10px' }}>EUAC_B = PW_B \u00d7 (A/P, i, n)</div>
+            <div>\u00A0\u00A0\u00A0\u00A0= ${COMP(res.buy.pw)} \u00d7 ${kfactor(res.factor)} = <span className="hl">${INR(res.buy.euac)}</span></div>
+          </div>
+        <//>
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Lease</div><h3>Present worth to EUAC</h3></div></div>
+          <div className="formula">
+            <div>PW_L = <span className="op">\u03a3</span> (advance + rentals + fees + deposit - deposit returned) / (1+i&#8348;)^m</div>
+            <div>\u00A0\u00A0\u00A0\u00A0= rentals ${COMP(res.lease.pwParts.lease)} + other ${COMP(res.lease.pwParts.other)}</div>
+            <div>\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0+ maintenance ${COMP(res.lease.pwParts.maint)} + insurance ${COMP(res.lease.pwParts.own)}</div>
+            <div>\u00A0\u00A0\u00A0\u00A0= <span className="hl">${INR(res.lease.pw)}</span></div>
+            <div style=${{ marginTop: '10px' }}>EUAC_L = PW_L \u00d7 (A/P, i, n) = <span className="hl">${INR(res.lease.euac)}</span></div>
+          </div>
+        <//>
+        <${Card}>
+          <div className="card__head"><div><div className="kicker">Rent</div><h3>Present worth to EUAC</h3></div></div>
+          <div className="formula">
+            <div>PW_R = <span className="op">\u03a3</span> (monthly hire + overtime + downtime allowance) / (1+i&#8348;)^m</div>
+            <div>\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0+ mobilization + demobilization + minimum-hire shortfall</div>
+            <div>\u00A0\u00A0\u00A0\u00A0= rentals ${COMP(res.rent.pwParts.lease)} + other ${COMP(res.rent.pwParts.other)}</div>
+            <div>\u00A0\u00A0\u00A0\u00A0= <span className="hl">${INR(res.rent.pw)}</span></div>
+            <div style=${{ marginTop: '10px' }}>EUAC_R = PW_R \u00d7 (A/P, i, n) = <span className="hl">${INR(res.rent.euac)}</span></div>
+          </div>
+        <//>
+      </div>
+    </div>
+
+    <div className="section">
+      <${SecHead} label="Audit trail" title="Annual cash-flow tables"
+        sub="Nominal flows, their discounted values and the running cumulative total for each alternative." />
+      <div className="tabs-inline">
+        ${order.map(function (k) {
+          return html`<button key=${k} className=${cfTab === k ? 'on' : ''} onClick=${function () { setCfTab(k); }}>${ALTNAME(k)}</button>`;
+        })}
+      </div>
+      <${Card} className="card--flush">
+        <${CashFlowTable} alt=${res[cfTab]} rate=${res.i} n=${res.n} />
+      <//>
+    </div>
+
+    <div className="section">
+      <${SecHead} label="Assumptions" title="What this comparison assumes and excludes" />
+      <div className="assump">
+        <div className="assump__item">
+          <h5>Equal service</h5>
+          <p>All three routes are assumed to deliver the same capacity, availability and condition
+            (${eq.capacity}). If a rental cannot guarantee that, the comparison is not like-for-like.</p>
+        </div>
+        <div className="assump__item">
+          <h5>Excluded costs</h5>
+          <p>Site fuel and operator wages are excluded unless they differ between options; so are
+            overheads, GST and working-capital effects, since none of them changes the ranking.</p>
+        </div>
+        <div className="assump__item">
+          <h5>Timing</h5>
+          <p>Flows are placed at ${inp.econ.timing === 'mid' ? 'mid-period' : 'end of period'}. Purchase price, advance payments
+            and deposits sit at t = 0; salvage, demobilization and termination payments at the end of the period.</p>
+        </div>
+        <div className="assump__item">
+          <h5>Escalation</h5>
+          <p>Maintenance grows at ${pctf(inp.buy.maintenanceEscalationPct)} per year; insurance, storage and operating costs
+            at the ${pctf(inp.econ.inflationRate)} inflation rate; lease and rental payments at their own escalation inputs.</p>
+        </div>
+        <div className="assump__item">
+          <h5>Residual value</h5>
+          <p>Buying realises ${INR(inp.buy.resaleValue)} at the end of the period (${pctf(inp.buy.price > 0 ? inp.buy.resaleValue / inp.buy.price * 100 : 0)} of price).
+            ${inp.buy.replacement ? 'Replacement machines are bought at each economic-life boundary.' : 'No replacement is assumed within the period.'}</p>
+        </div>
+        <div className="assump__item">
+          <h5>Tax</h5>
+          <p>${inp.econ.afterTax
+            ? 'After-tax: recurring costs are reduced by the ' + pctf(inp.econ.taxRate, 0) + ' tax rate and buying earns a straight-line depreciation shield. Interest deductibility is ignored.'
+            : 'Before-tax (pre-tax) analysis. No depreciation shield or tax deduction is applied to any option.'}</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="pill-row" style=${{ marginTop: '8px' }}>
+      <button className="btn btn--dark" onClick=${function () { props.go('breakeven'); }}>Continue to break-even analysis</button>
+      <button className="btn btn--line" onClick=${function () { props.go('sensitivity'); }}>Sensitivity analysis</button>
+      <button className="btn btn--primary" onClick=${function () { props.go('report'); }}>Generate PDF report</button>
+    </div>
+  </div>`;
+}
+
+function bestReason(res, inp) {
+  if (res.best === 'rent') {
+    return 'Hiring wins because the deployment is short relative to the equipment\u2019s economic life: the capital recovery charge on ' +
+      COMP(inp.buy.price) + ' spread over ' + fx(res.n, 2) + ' years cannot be recovered through utilization, whereas the rental rate charges only for the period used.';
+  }
+  if (res.best === 'lease') {
+    return 'Leasing wins because it removes the capital recovery charge while still avoiding the higher per-month hire rate: the rentals plus the lessee\u2019s incidental costs annualise below both ownership and short-term hire.';
+  }
+  return 'Ownership wins because the annualised capital recovery, net of the residual value recovered at the end, falls below the cumulative lease or rental charges over a deployment of this length.';
+}
+
+/* ----------------------------------------------------------- break-even */
+function beNarrative(segs) {
+  if (!segs.length) return '';
+  if (segs.length === 1) {
+    return ALTNAME(segs[0].k) + ' remains the cheapest alternative across the whole 0.5 to 15 year range tested. ' +
+      'No break-even point exists here: one route dominates at every duration, so the decision is insensitive to how long the machine is kept.';
+  }
+  var order = segs.map(function (s2) {
+    return ALTNAME(s2.k) + ' is cheapest from ' + fx(s2.from, 1) + ' to ' + fx(s2.to, 1) + ' years';
+  }).join('; ');
+  var shortWin = segs[0].k;
+  var tail = shortWin === 'rent'
+    ? ' Renting is the more economical route for short deployments, where the capital recovery charge on the purchase price cannot be spread over enough productive hours; buying becomes competitive once the machine is used over a sufficiently long period and the residual value is recovered at the end.'
+    : shortWin === 'lease'
+      ? ' Contract hire is the cheaper way to secure a short deployment on these terms, because the lease payment sits below the open-market rental rate while still avoiding the capital outlay; ownership overtakes it once the annualised capital recovery, net of residual value, falls below the continuing lease charge.'
+      : ' Ownership is already the cheapest route at the shortest deployment tested, so the annualised capital recovery plus ownership costs stays below both the lease and the rental charge even over a few months.';
+  return order + '.' + tail;
+}
+
+function BreakEvenPage(props) {
+  var be = props.be, res = props.results, inp = props.inputs;
+
+  var segs = [];
+  be.winners.forEach(function (w, i) {
+    var last = segs[segs.length - 1];
+    if (last && last.k === w) last.to = be.years[i];
+    else segs.push({ k: w, from: be.years[i], to: be.years[i] });
+  });
+
+  var pairs = [
+    { id: 'buy-rent', a: 'Buy', b: 'Rent', v: be.crossings['buy-rent'] },
+    { id: 'buy-lease', a: 'Buy', b: 'Lease', v: be.crossings['buy-lease'] },
+    { id: 'lease-rent', a: 'Lease', b: 'Rent', v: be.crossings['lease-rent'] }
+  ];
+
+  var tableYears = [0.5, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15].filter(function (y) { return y <= be.years[be.years.length - 1] + 1e-9; });
+
+  return html`<div className="wrap page">
+    <${SecHead} label="Step 3 of 3 \u00b7 Break-even"
+      title="At what deployment length does the answer change?"
+      sub="Each alternative is re-evaluated at every study period from 0.5 to 15 years on the same assumptions. The crossover points are where two EUAC curves intersect."
+      right=${html`<button className="btn btn--line btn--sm" onClick=${function () { props.go('sensitivity'); }}>Sensitivity analysis</button>`} />
+
+    <${Card} style=${{ marginBottom: '18px' }}>
+      <div className="card__head"><div><div className="kicker">Break-even chart</div><h3>EUAC against study period</h3></div>
+        <div className="pill-row">
+          ${pairs.map(function (p) {
+            return html`<${Badge} key=${p.id} tone=${p.v.length ? 'win' : 'muted'}>
+              ${p.a} vs ${p.b}: ${p.v.length ? fx(p.v[0], 2) + ' yr' : 'no crossover'}<//>`;
+          })}
+        </div>
+      </div>
+      <${ChartBox} config=${durationConfig(be)} height=${340} regKey="be" />
+    <//>
+
+    <div className="grid g3" style=${{ marginBottom: '18px' }}>
+      ${pairs.map(function (p) {
+        return html`<div key=${p.id} className="card">
+          <div className="stat__k">${p.a} vs ${p.b}</div>
+          <div className="stat__v" style=${{ fontSize: '22px' }}>${p.v.length ? fx(p.v[0], 2) + ' yr' : 'None'}</div>
+          <div className="stat__m">
+            ${p.v.length
+              ? 'Below ' + fx(p.v[0], 2) + ' years the ' + p.a.toLowerCase() + ' curve is the more expensive of the two; above it, the ' + p.b.toLowerCase() + ' curve is.'
+              : 'The two curves do not cross anywhere in the 0.5 to 15 year range tested. One option dominates the other on cost throughout, so duration alone will not change the choice between them.'}
+          </div>
+        </div>`;
+      })}
+    </div>
+
+    <${Card} style=${{ marginBottom: '18px' }}>
+      <div className="card__head"><div><div className="kicker">Interpretation</div><h3>What the crossover means</h3></div></div>
+      <p className="small" style=${{ color: 'var(--ink-2)' }}>
+        ${beNarrative(segs)}
+      </p>
+      <p className="small" style=${{ color: 'var(--ink-2)', marginBottom: 0 }}>
+        The curve for buying is not a straight line: it falls steeply at first because the fixed purchase price is
+        spread over more years, then flattens as maintenance escalation offsets the spreading effect
+        ${inp.buy.replacement ? ', with a step at each economic-life boundary where a replacement machine is bought' : ''}.
+        Rental and lease curves are almost linear because their cost is proportional to time.
+      </p>
+    <//>
+
+    <div className="grid g2">
+      <${Card} className="card--flush">
+        <div style=${{ padding: '18px 20px 6px' }}><div className="kicker" style=${{ fontFamily: 'var(--f-mono)', fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-4)' }}>Table</div>
+          <h3 style=${{ marginTop: '4px' }}>EUAC at selected durations</h3></div>
+        <div className="tbl-wrap">
+          <table className="tbl">
+            <thead><tr><th>Study period</th><th>Buy</th><th>Lease</th><th>Rent</th><th>Lowest</th></tr></thead>
+            <tbody>
+              ${tableYears.map(function (y) {
+                var idx = be.years.indexOf(+y.toFixed(2));
+                if (idx < 0) idx = 0;
+                var vals = [be.buy[idx], be.lease[idx], be.rent[idx]];
+                var mn = Math.min.apply(null, vals);
+                return html`<tr key=${y}>
+                  <td>${y < 1 ? Math.round(y * 12) + ' months' : fx(y, 1) + ' years'}</td>
+                  ${vals.map(function (v, j) {
+                    return html`<td key=${j} className=${'n' + (v === mn ? ' best' : '')}>${INR(v)}</td>`;
+                  })}
+                  <td><${Badge} tone=${['buy', 'lease', 'rent'][vals.indexOf(mn)]}>${ALTNAME(['buy', 'lease', 'rent'][vals.indexOf(mn)])}<//></td>
+                </tr>`;
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="tbl-foot">Values recomputed by the engine at each duration \u2014 not interpolated.</div>
+      <//>
+
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">Method</div><h3>Assumptions behind the sweep</h3></div></div>
+        <div className="assump" style=${{ gridTemplateColumns: '1fr' }}>
+          <div className="assump__item">
+            <h5>Rental duration tracks the study period</h5>
+            <p>Hire is assumed to run for the whole study period at the entered rate, so the rental curve rises in step with duration.</p>
+          </div>
+          <div className="assump__item">
+            <h5>Lease renewal</h5>
+            <p>Where the study period exceeds the ${Math.round(inp.lease.termMonths)}-month lease term, the lease is renewed on the same terms with a fresh advance payment and deposit cycle.</p>
+          </div>
+          <div className="assump__item">
+            <h5>Economic life and replacement</h5>
+            <p>${inp.buy.replacement
+              ? 'Replacement purchases are modelled at every ' + fx(inp.buy.economicLifeYears, 1) + '-year life boundary, each with its own residual.'
+              : 'The same machine is assumed to serve any duration tested, up to and beyond its ' + fx(inp.buy.economicLifeYears, 1) + '-year economic life. Enable replacement in the buy inputs for a more conservative curve.'}</p>
+          </div>
+          <div className="assump__item">
+            <h5>Residual value</h5>
+            <p>Held at ${INR(inp.buy.resaleValue)} in every duration tested, treated as the recoverable amount at the end of the period. For very short periods a real machine would resell for more; that would only strengthen the case for buying.</p>
+          </div>
+        </div>
+      <//>
+    </div>
+  </div>`;
+}
+
+/* ---------------------------------------------------------- sensitivity */
+var SENS_VARS = [
+  { path: 'econ.discountRate', label: 'Discount rate', unit: '% / yr' },
+  { path: 'project.analysisYears', label: 'Project duration', unit: 'years' },
+  { path: 'buy.price', label: 'Purchase price', unit: '\u20b9' },
+  { path: 'rent.rateValue', label: 'Rental rate', unit: '\u20b9 / month' },
+  { path: 'lease.payment', label: 'Lease payment', unit: '\u20b9 / month' },
+  { path: 'buy.maintenanceYear1', label: 'Maintenance cost', unit: '\u20b9 / yr' },
+  { path: 'buy.resaleValue', label: 'Residual value', unit: '\u20b9' },
+  { path: 'project.utilizationPct', label: 'Annual utilization', unit: '%' }
+];
+
+function SensitivityPage(props) {
+  var inp = props.inputs, res = props.results;
+  var [varIdx, setVarIdx] = useState(3);
+  var [pct, setPct] = useState(40);
+  var v = SENS_VARS[varIdx];
+
+  var sens = useMemo(function () {
+    return E.sensitivity(E.deepClone(inp), v.path, { pct: pct, steps: 9 });
+  }, [inp, varIdx, pct]);
+
+  var tornado = useMemo(function () {
+    return SENS_VARS.map(function (s) {
+      var r = E.sensitivity(E.deepClone(inp), s.path, { pct: 25, steps: 5 });
+      var winners = {};
+      r.points.forEach(function (p) { winners[p.best] = (winners[p.best] || 0) + 1; });
+      var lows = r.points.map(function (p) { return p.buy; });
+      return {
+        label: s.label, path: s.path,
+        lo: r.lo, hi: r.hi,
+        swings: {
+          buy: Math.max.apply(null, lows) - Math.min.apply(null, lows),
+          lease: Math.max.apply(null, r.points.map(function (p) { return p.lease; })) - Math.min.apply(null, r.points.map(function (p) { return p.lease; })),
+          rent: Math.max.apply(null, r.points.map(function (p) { return p.rent; })) - Math.min.apply(null, r.points.map(function (p) { return p.rent; }))
+        },
+        winners: Object.keys(winners),
+        flips: Object.keys(winners).length > 1
+      };
+    }).sort(function (a, b) { return (b.swings.buy + b.swings.lease + b.swings.rent) - (a.swings.buy + a.swings.lease + a.swings.rent); });
+  }, [inp]);
+
+  /* three standard deployment scenarios */
+  var presets = useMemo(function () {
+    var cases = [
+      { t: 'Short-term deployment', m: 3, note: 'One mobilization, minimum hire dominates' },
+      { t: 'Medium-term project', m: 12, note: 'Single working season' },
+      { t: 'Long-term deployment', m: 36, note: 'Spans multiple lease terms' }
+    ];
+    return cases.map(function (c) {
+      var w = E.deepClone(inp);
+      w.project.analysisYears = c.m / 12;
+      w.project.durationMonths = c.m;
+      var r = E.evaluate(w);
+      return { label: c.t, months: c.m, note: c.note, r: r };
+    });
+  }, [inp]);
+
+  var winnersSeen = {};
+  sens.points.forEach(function (p) { winnersSeen[p.best] = true; });
+  var flip = Object.keys(winnersSeen).length > 1;
+
+  return html`<div className="wrap page">
+    <${SecHead} label="Sensitivity" title="How robust is the recommendation?"
+      sub="Each variable is flexed on its own while every other input is held constant. Where the preferred alternative changes, the recommendation is not robust to that assumption."
+      right=${html`<button className="btn btn--line btn--sm" onClick=${function () { props.go('report'); }}>Include in report</button>`} />
+
+    <${Card} style=${{ marginBottom: '18px' }}>
+      <div className="card__head">
+        <div><div className="kicker">One-way sensitivity</div><h3>${v.label}</h3></div>
+        <div className="pill-row">
+          <${Badge} tone="muted">base ${v.path === 'econ.discountRate' || v.path === 'project.utilizationPct' ? fx(E.getPath(inp, v.path), 1) + '%' : (v.path === 'project.analysisYears' ? fx(E.getPath(inp, v.path), 2) + ' yr' : COMP(E.getPath(inp, v.path)))}<//>
+        </div>
+      </div>
+      <div className="tabs-inline">
+        ${SENS_VARS.map(function (s, i) {
+          return html`<button key=${s.path} className=${i === varIdx ? 'on' : ''} onClick=${function () { setVarIdx(i); }}>${s.label}</button>`;
+        })}
+      </div>
+      <div style=${{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px', flexWrap: 'wrap' }}>
+        <span className="small dim">Range \u00b1</span>
+        <input type="range" min="10" max="80" step="5" value=${pct} onChange=${function (e) { setPct(parseInt(e.target.value, 10)); }}
+          style=${{ flex: '1 1 200px', maxWidth: '320px', accentColor: '#143454' }} />
+        <span className="mono small">${pct}% (${v.unit === '%' ? fx(sens.lo, 1) + '% to ' + fx(sens.hi, 1) + '%' : COMP(sens.lo) + ' to ' + COMP(sens.hi)})</span>
+      </div>
+      <${ChartBox} config=${sweepConfig(sens.points, v.label, function (x) {
+        return v.path === 'econ.discountRate' || v.path === 'project.utilizationPct' ? x + '%'
+          : v.path === 'project.analysisYears' ? x + 'y' : COMP(x);
+      })} height=${320} regKey="sens" />
+      <div className=${'note ' + (flip ? 'note--err' : 'note--ok')} style=${{ marginTop: '12px' }}>
+        ${flip
+          ? html`<span><b>The preferred option changes inside this range.</b>${' Across the tested values the cheapest route moves between ' + Object.keys(winnersSeen).map(function (k) { return ALTNAME(k); }).join(' and ') + '. The recommendation at the base case is therefore sensitive to ' + v.label.toLowerCase() + '.'}</span>`
+          : html`<span><b>The recommendation is stable.</b>${' Across the whole \u00b1' + pct + '% range of ' + v.label.toLowerCase() + ', ' + ALTNAME(res.best) + ' remains the lowest-cost option. No crossover occurs in this band.'}</span>`}
+      </div>
+    <//>
+
+    <div className="grid g2" style=${{ marginBottom: '18px' }}>
+      <${Card} className="card--flush">
+        <div style=${{ padding: '18px 20px 6px' }}>
+          <div className="kicker" style=${{ fontFamily: 'var(--f-mono)', fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-4)' }}>Detail</div>
+          <h3 style=${{ marginTop: '4px' }}>EUAC at each tested value</h3>
+        </div>
+        <div className="tbl-wrap">
+          <table className="tbl" style=${{ minWidth: '460px' }}>
+            <thead><tr><th>${v.label}</th><th>Buy</th><th>Lease</th><th>Rent</th><th>Lowest</th></tr></thead>
+            <tbody>
+              ${sens.points.map(function (p, i) {
+                return html`<tr key=${i}>
+                  <td className="n">${v.path === 'econ.discountRate' || v.path === 'project.utilizationPct' ? fx(p.x, 1) + '%' : v.path === 'project.analysisYears' ? fx(p.x, 2) + ' yr' : INR(p.x)}</td>
+                  <td className=${'n' + (p.best === 'buy' ? ' best' : '')}>${INR(p.buy)}</td>
+                  <td className=${'n' + (p.best === 'lease' ? ' best' : '')}>${INR(p.lease)}</td>
+                  <td className=${'n' + (p.best === 'rent' ? ' best' : '')}>${INR(p.rent)}</td>
+                  <td><${Badge} tone=${p.best}>${ALTNAME(p.best)}<//></td>
+                </tr>`;
+              })}
+            </tbody>
+          </table>
+        </div>
+      <//>
+
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">Ranking of influences</div><h3>Which variable moves the answer most</h3></div></div>
+        <div className="tbl-wrap">
+          <table className="tbl" style=${{ minWidth: '420px' }}>
+            <thead><tr><th>Variable (\u00b125%)</th><th>Swing in EUAC</th><th>Winner flips?</th></tr></thead>
+            <tbody>
+              ${tornado.map(function (t) {
+                var sw = Math.max(t.swings.buy, t.swings.lease, t.swings.rent);
+                var w = Math.max(sw, 1);
+                return html`<tr key=${t.path}>
+                  <td>${t.label}</td>
+                  <td className="n">
+                    <div style=${{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                      <span style=${{ height: '6px', width: (60 * sw / w) + 'px', background: '#143454', borderRadius: '3px', display: 'inline-block' }}></span>
+                      <span>${COMP(sw)}</span>
+                    </div>
+                  </td>
+                  <td>${t.flips ? html`<${Badge} tone="warn">Yes<//>` : html`<${Badge} tone="muted">No<//>`}</td>
+                </tr>`;
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="tbl-foot">Swing is the change in EUAC of the most affected alternative between the two extremes of a \u00b125% move in that variable.</div>
+      <//>
+    </div>
+
+    <div className="section">
+      <${SecHead} label="Standard scenarios" title="Three deployment lengths on identical assumptions"
+        sub="Short, medium and long deployments, evaluated with the same equipment, rates and maintenance assumptions. Only the study period changes." />
+      <div className="grid g3">
+        ${presets.map(function (p) {
+          return html`<${Card} key=${p.months}>
+            <div style=${{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div className="kicker" style=${{ fontFamily: 'var(--f-mono)', fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-4)' }}>${p.months} months</div>
+                <h3 style=${{ marginTop: '3px' }}>${p.label}</h3>
+              </div>
+              <${Badge} tone=${p.r.best}>${ALTNAME(p.r.best)}<//>
+            </div>
+            <div style=${{ margin: '14px 0 6px' }}>
+              ${['buy', 'lease', 'rent'].map(function (k) {
+                return html`<div key=${k} style=${{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px dashed var(--line)' }}>
+                  <span className="small dim">${ALTNAME(k)}</span>
+                  <span className="num small" style=${{ fontWeight: p.r.best === k ? 600 : 400, color: p.r.best === k ? 'var(--green)' : 'var(--ink)' }}>${INR(p.r[k].euac)}/yr</span>
+                </div>`;
+              })}
+            </div>
+            <div className="tiny dim">
+              ${'Saves ' + INR(p.r.savings) + '/yr vs ' + ALTNAME(p.r.secondBest) + '. ' + p.note + '.'}
+            </div>
+            <div className="tiny" style=${{ marginTop: '8px', color: 'var(--ink-3)', borderTop: '1px solid var(--line)', paddingTop: '8px' }}>
+              ${p.months === 3
+                ? 'A 3-month hire avoids the capital outlay entirely; ownership costs are prorated to a quarter year.'
+                : p.months === 12
+                  ? 'One year does not exhaust the ' + fx(inp.buy.economicLifeYears, 1) + '-year economic life, so a large share of the purchase price is recovered through resale.'
+                  : 'Three years spans more than one ' + Math.round(inp.lease.termMonths) + '-month lease term, so the lease is renewed with a fresh advance payment.'}
+            </div>
+          <//>`;
+        })}
+      </div>
+    </div>
+
+    <div className="note note--info">
+      <b>Why assumptions must change across durations.</b> A 3-month comparison is a pure hire decision \u2014 no replacement
+      cycle, no resale beyond the initial depreciation hit. At 36 months the lease may need renewal on new terms, and if the
+      study period approaches the equipment's economic life the buy option must include a replacement purchase. Holding all
+      other inputs fixed while only the period changes (as above) is deliberate: it isolates the effect of duration, which is
+      exactly what the break-even and sensitivity analysis is meant to show.
+    </div>
+  </div>`;
+}
+
+/* --------------------------------------------------------------- report */
+function ReportPage(props) {
+  var inp = props.inputs, res = props.results, v = props.validation;
+  var meta = props.meta, setMeta = props.setMeta;
+  var [busy, setBusy] = useState(false);
+
+  return html`<div className="wrap page">
+    <${SecHead} label="Deliverable" title="Generate the project report"
+      sub="A submission-ready PDF: inputs, formulas, cash-flow tables, charts, break-even and sensitivity findings, and a written recommendation."
+      right=${html`<button className="btn btn--primary" disabled=${busy || v.errors.length > 0}
+        onClick=${function () { setBusy(true); setTimeout(function () { try { props.makePDF(); } finally { setBusy(false); } }, 30); }}>
+        ${busy ? 'Building PDF\u2026' : 'Generate PDF Report'}</button>`} />
+
+    ${v.errors.length > 0 ? html`<div className="note note--err" style=${{ marginBottom: '16px' }}>
+      <b>Resolve the input errors first</b> \u2014 the report cannot be produced from inconsistent assumptions.
+      <ul>${v.errors.map(function (m, i) { return html`<li key=${i}>${m}</li>`; })}</ul>
+    </div>` : null}
+
+    <div className="grid g2">
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">Cover details</div><h3>Who is submitting this</h3></div></div>
+        <${TextIn} label="Student name" value=${meta.student} onChange=${function (x) { setMeta(Object.assign({}, meta, { student: x })); }} />
+        <div className="field__row">
+          <${TextIn} label="Roll / registration no." value=${meta.roll} onChange=${function (x) { setMeta(Object.assign({}, meta, { roll: x })); }} />
+          <${TextIn} label="Course" value=${meta.course} onChange=${function (x) { setMeta(Object.assign({}, meta, { course: x })); }} />
+        </div>
+        <${TextIn} label="Institution / department" value=${meta.inst} onChange=${function (x) { setMeta(Object.assign({}, meta, { inst: x })); }} />
+        <div className="note note--info" style=${{ marginTop: '6px' }}>
+          These details appear on the report cover only. They are stored in this browser and never leave it.
+        </div>
+      <//>
+
+      <${Card}>
+        <div className="card__head"><div><div className="kicker">Contents</div><h3>What the PDF contains</h3></div></div>
+        <div className="report-preview" style=${{ boxShadow: 'none', padding: '0' }}>
+          <ol>
+            <li>Cover page with project, equipment and author details</li>
+            <li>Project information and economic parameters</li>
+            <li>All input assumptions for buy, lease and rent</li>
+            <li>Economic formulas used, with factor values</li>
+            <li>Annual cash-flow tables for each alternative</li>
+            <li>Present worth and EUAC computation summary</li>
+            <li>Comparison table and cost charts</li>
+            <li>Break-even and sensitivity findings</li>
+            <li>Final recommendation with economic justification</li>
+            <li>Limitations and disclaimer</li>
+          </ol>
+        </div>
+      <//>
+    </div>
+
+    <div className="grid g4" style=${{ marginTop: '18px' }}>
+      <div className="card stat stat--buy"><div className="stat__k">Buy EUAC</div><div className="stat__v">${INR(res.buy.euac)}</div><div className="stat__m">per year</div></div>
+      <div className="card stat stat--lease"><div className="stat__k">Lease EUAC</div><div className="stat__v">${INR(res.lease.euac)}</div><div className="stat__m">per year</div></div>
+      <div className="card stat stat--rent"><div className="stat__k">Rent EUAC</div><div className="stat__v">${INR(res.rent.euac)}</div><div className="stat__m">per year</div></div>
+      <div className="card stat stat--win"><div className="stat__k">Recommended</div><div className="stat__v">${ALTNAME(res.best)}</div><div className="stat__m">${INR(res.savings)}/yr saving</div></div>
+    </div>
+
+    <div className="note" style=${{ marginTop: '18px' }}>
+      <b>Disclaimer.</b> All results depend entirely on the input assumptions entered here. The equipment prices,
+      rentals and lease rates shipped with this tool are illustrative study values, not market quotations. A real
+      acquisition decision should use vendor quotations, a company-specific cost of capital, and a sensitivity check
+      against at least the purchase price and utilization assumptions.
+    </div>
+  </div>`;
+}
+
+/* ------------------------------------------------------------------ PDF */
+function makePDF(state) {
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  var W = doc.internal.pageSize.getWidth();
+  var H = doc.internal.pageSize.getHeight();
+  var M = 42;
+  var CW = W - 2 * M;
+  var inp = state.inputs, res = state.results, be = state.be, meta = state.meta;
+  var eq = E.equipmentById(inp.project.equipmentId);
+  var y = 0;
+  var page = 1;
+
+  var NAVY = [20, 52, 84], INK = [40, 55, 70], DIM = [120, 135, 150], YEL = [232, 163, 23];
+
+  /* jsPDF's built-in fonts are WinAnsi: transliterate anything outside it,
+     notably the rupee sign, so amounts never come out as mojibake. */
+  function asc(v) {
+    return String(v)
+      .replace(/\u20b9/g, 'Rs ')
+      .replace(/\u2212/g, '-')
+      .replace(/\u00d7/g, 'x')
+      .replace(/\u00f7/g, '/')
+      .replace(/[\u2013\u2014\u2015]/g, '-')
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201c\u201d]/g, '"')
+      .replace(/\u00b7/g, '-')
+      .replace(/\u2022/g, '-')
+      .replace(/\u2264/g, '<=')
+      .replace(/\u2265/g, '>=')
+      .replace(/\u2026/g, '...')
+      .replace(/\u00a0/g, ' ')
+      .replace(/\u03a3/g, 'SUM')
+      .replace(/\u2192/g, '->')
+      .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, '');
+  }
+
+  function setY(v2) { y = v2; }
+  function ensure(h) {
+    if (y + h > H - 52) { doc.addPage(); page++; drawHeaderBand(); y = 78; }
+  }
+  function drawHeaderBand() {
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.rect(0, 0, W, 34, 'F');
+    doc.setFillColor(YEL[0], YEL[1], YEL[2]);
+    doc.rect(0, 34, W, 2.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('EQUIPWISE  |  BUY vs LEASE vs RENT  |  EUAC ANALYSIS', M, 21);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(180, 195, 210);
+    doc.text('Construction Economics and Finance', W - M, 21, { align: 'right' });
+  }
+
+  function sectionTitle(num, title) {
+    ensure(46);
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.rect(M, y, 3, 15, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.5);
+    doc.text(num + '  ' + title.toUpperCase(), M + 10, y + 11.5);
+    y += 24;
+  }
+
+  function para(text, opts) {
+    opts = opts || {};
+    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(opts.size || 9);
+    doc.setTextColor.apply(doc, opts.color || INK);
+    var lines = doc.splitTextToSize(asc(text), opts.width || CW);
+    for (var i = 0; i < lines.length; i++) {
+      ensure(opts.size ? opts.size + 6 : 15);
+      doc.text(lines[i], opts.x || M, y);
+      y += (opts.size || 9) * 1.42;
+    }
+    y += opts.gap == null ? 4 : opts.gap;
+  }
+
+  function table(head, body, opts) {
+    opts = opts || {};
+    ensure(60);
+    doc.autoTable({
+      head: [head.map(asc)],
+      body: body.map(function (r) { return r.map(asc); }),
+      startY: y,
+      margin: { left: M, right: M },
+      theme: 'grid',
+      styles: { font: 'helvetica', fontSize: 7.6, cellPadding: 3.4, textColor: INK, lineColor: [220, 226, 232], lineWidth: 0.5 },
+      headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontSize: 7.4, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [246, 249, 251] },
+      columnStyles: opts.cols || {},
+      didDrawPage: function () { }
+    });
+    y = doc.lastAutoTable.finalY + 12;
+  }
+
+  /* ---------------------------------------------------------- cover page */
+  doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
+  doc.rect(0, 0, W, 300, 'F');
+  doc.setFillColor(YEL[0], YEL[1], YEL[2]);
+  doc.rect(0, 300, W, 4, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(30);
+  doc.text('EQUIPWISE', M, 96);
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(200, 214, 228);
+  doc.text('EQUIPMENT ACQUISITION DECISION SUPPORT  \u00b7  CONSTRUCTION ECONOMICS AND FINANCE', M, 118);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(19);
+  doc.setTextColor(255, 255, 255);
+  var titleLines = doc.splitTextToSize(asc('Buy, Lease or Rent? An Equivalent Uniform Annual Cost Analysis'), CW);
+  var ty = 160;
+  titleLines.forEach(function (l) { doc.text(l, M, ty); ty += 24; });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.setTextColor(YEL[0], YEL[1], YEL[2]);
+  doc.text(asc(eq.name + '  -  ' + eq.spec), M, ty + 12);
+
+  y = 340;
+  doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('PROJECT', M, y);
+  y += 18;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(INK[0], INK[1], INK[2]);
+  var coverRows = [
+    ['Project', inp.project.name || '\u2014'],
+    ['Equipment', eq.name + ' (' + eq.spec + ')'],
+    ['Study period', fx(res.n, 2) + ' years  (' + Math.round(res.n * 12) + ' months)'],
+    ['Discount rate', pctf(res.i * 100, 2) + ' effective per year'],
+    ['Productive hours', Math.round(res.hours) + ' per year at ' + pctf(inp.project.utilizationPct, 0) + ' utilization'],
+    ['Recommended option', ALTNAME(res.best) + ' at ' + INR(res.bestEuac) + ' per year']
+  ];
+  coverRows.forEach(function (r) {
+    doc.setTextColor(DIM[0], DIM[1], DIM[2]);
+    doc.setFontSize(9);
+    doc.text(r[0].toUpperCase(), M, y);
+    doc.setTextColor(INK[0], INK[1], INK[2]);
+    doc.setFontSize(10);
+    doc.text(asc(r[1]), M + 120, y);
+    y += 17;
+  });
+
+  y += 14;
+  doc.setDrawColor(220, 226, 232);
+  doc.line(M, y, W - M, y);
+  y += 22;
+  doc.setFontSize(9);
+  doc.setTextColor(DIM[0], DIM[1], DIM[2]);
+  doc.text('PREPARED BY', M, y);
+  y += 15;
+  doc.setFontSize(10);
+  doc.setTextColor(INK[0], INK[1], INK[2]);
+  doc.text(asc(meta.student || 'Name: ______________________'), M, y); y += 15;
+  doc.text(asc(meta.roll ? 'Roll no. ' + meta.roll : 'Roll no. ____________'), M, y); y += 15;
+  doc.text(asc(meta.course || 'Construction Economics and Finance'), M, y); y += 15;
+  doc.text(asc(meta.inst || ''), M, y); y += 15;
+  doc.text('Date: ' + new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }), M, y);
+
+  doc.setFillColor(246, 249, 251);
+  doc.rect(M, H - 118, CW, 62, 'F');
+  doc.setFontSize(7.6);
+  doc.setTextColor(DIM[0], DIM[1], DIM[2]);
+  var disc = doc.splitTextToSize(asc('DISCLAIMER: Every figure in this report is computed from the input assumptions listed in Section 3. The equipment prices, rentals and lease rates used are illustrative study values, not market quotations. Results are sensitive to those assumptions; the sensitivity analysis in Section 8 shows which ones matter most. This is an academic cost analysis, not a substitute for a vendor quotation or professional financial advice.'), CW - 20);
+  disc.forEach(function (l, i) { doc.text(l, M + 10, H - 100 + i * 9.5); });
+
+  /* ---------------------------------------------------- page 2 onwards */
+  doc.addPage(); page++; drawHeaderBand(); y = 78;
+
+  sectionTitle('1', 'Executive summary');
+  para('Three acquisition routes were compared for the ' + eq.name.toLowerCase() + ' required on "' +
+    (inp.project.name || 'the project') + '" over a ' + fx(res.n, 2) + '-year study period at a ' +
+    pctf(res.i * 100, 2) + ' effective annual discount rate. Each route\'s complete cash-flow stream was discounted to ' +
+    'present worth and then converted into an equivalent uniform annual cost using the capital recovery factor.', { gap: 8 });
+
+  table(
+    ['Alternative', 'Present worth of cost', 'EUAC per year', 'Cost per productive hour', 'Rank'],
+    [
+      ['Buy (own)', INR(res.buy.pw), INR(res.buy.euac), INR(res.buy.costPerHour), String(res.ranking.indexOf('buy') + 1)],
+      ['Lease', INR(res.lease.pw), INR(res.lease.euac), INR(res.lease.costPerHour), String(res.ranking.indexOf('lease') + 1)],
+      ['Rent', INR(res.rent.pw), INR(res.rent.euac), INR(res.rent.costPerHour), String(res.ranking.indexOf('rent') + 1)]
+    ],
+    { cols: { 0: { fontStyle: 'bold' } } }
+  );
+
+  para('Recommendation: ' + ALTNAME(res.best) + ' is the most economical alternative at ' + INR(res.bestEuac) +
+    ' per year, saving ' + INR(res.savings) + ' per year (' + pctf(res.savingsPct) + ') against ' +
+    ALTNAME(res.secondBest) + '. ' + bestReason(res, inp), { gap: 10 });
+
+  sectionTitle('2', 'Project information and economic parameters');
+  table(['Parameter', 'Value'], [
+    ['Project name', inp.project.name || '\u2014'],
+    ['Equipment selected', eq.name + ' \u2014 ' + eq.spec],
+    ['Cost data source', eq.custom ? 'User-entered equipment record' : 'Illustrative sample values shipped with EquipWise'],
+    ['Required capacity', String(inp.project.minCapacity) + '  (' + eq.capacity + ')'],
+    ['Project duration', fx(inp.project.durationMonths, 0) + ' months'],
+    ['Analysis period (n)', fx(res.n, 2) + ' years'],
+    ['Operating hours per year (available)', fx(inp.project.hoursPerYear, 0) + ' h'],
+    ['Utilization', pctf(inp.project.utilizationPct, 0) + '  \u2192  ' + Math.round(res.hours) + ' productive h/yr'],
+    ['Effective annual discount rate (i)', pctf(res.i * 100, 2)],
+    ['Inflation rate', pctf(inp.econ.inflationRate, 2)],
+    ['Tax treatment', inp.econ.afterTax ? 'After-tax at ' + pctf(inp.econ.taxRate, 0) : 'Before tax'],
+    ['Cash-flow timing', inp.econ.timing === 'mid' ? 'Mid-period for recurring costs' : 'End of period'],
+    ['Currency', 'Indian Rupee (INR), Indian numbering system']
+  ]);
+
+  sectionTitle('3', 'Input assumptions');
+  para('Buy option', { bold: true, size: 9.5, gap: 3 });
+  table(['Item', 'Value'], [
+    ['Purchase price (P)', INR(inp.buy.price)],
+    ['Down payment', pctf(inp.buy.downPaymentPct, 0) + '  (' + INR(inp.buy.price * inp.buy.downPaymentPct / 100) + ')'],
+    ['Loan amount', INR(inp.buy.price * (1 - inp.buy.downPaymentPct / 100))],
+    ['Loan interest rate / tenure', pctf(inp.buy.loanRate, 2) + ' over ' + fx(inp.buy.loanTenureYears, 1) + ' years'],
+    ['Financing basis used', inp.buy.financingView === 'owner' ? 'Owner cash flows (down payment + repayments + net sale)' : 'Asset cost (price + resale)'],
+    ['Maintenance, year 1', INR(inp.buy.maintenanceYear1)],
+    ['Maintenance escalation', pctf(inp.buy.maintenanceEscalationPct, 1) + ' per year'],
+    ['Insurance / registration / storage', INR(inp.buy.insuranceAnnual) + ' / ' + INR(inp.buy.registrationAnnual) + ' / ' + INR(inp.buy.storageAnnual) + ' per year'],
+    ['Other ownership cost', INR(inp.buy.otherAnnual) + ' per year'],
+    ['Fuel + operator (buy)', INR(inp.buy.operatingCostPerHour) + ' per productive hour'],
+    ['Economic life', fx(inp.buy.economicLifeYears, 1) + ' years'],
+    ['Replacement modelled', inp.buy.replacement ? 'Yes' : 'No'],
+    ['Expected resale / salvage (S)', INR(inp.buy.resaleValue) + '  (' + pctf(inp.buy.price > 0 ? inp.buy.resaleValue / inp.buy.price * 100 : 0) + ' of price)']
+  ]);
+
+  para('Lease option', { bold: true, size: 9.5, gap: 3 });
+  table(['Item', 'Value'], [
+    ['Lease payment', INR(inp.lease.payment) + ' per ' + (inp.lease.paymentFrequency === 'annual' ? 'year' : 'month')],
+    ['Advance payment / non-refundable fee', INR(inp.lease.advancePayment)],
+    ['Lease term', fx(inp.lease.termMonths, 0) + ' months'],
+    ['Escalation in lease payment', pctf(inp.lease.escalationPct, 1) + ' per year'],
+    ['Maintenance responsibility', inp.lease.maintenanceResponsibility === 'lessee' ? 'Lessee (included as a cost)' : 'Lessor (included in rentals)'],
+    ['Lessee maintenance', INR(inp.lease.lesseeMaintenanceAnnual) + ' per year'],
+    ['Lessee insurance', INR(inp.lease.lesseeInsuranceAnnual) + ' per year'],
+    ['Refundable security deposit', INR(inp.lease.deposit) + ', returned in month ' + fx(inp.lease.depositReturnMonth, 0)],
+    ['End-of-lease purchase / termination', INR(inp.lease.terminationPayment)],
+    ['Fuel + operator (lease)', INR(inp.lease.operatingCostPerHour) + ' per productive hour']
+  ]);
+
+  para('Rent option', { bold: true, size: 9.5, gap: 3 });
+  table(['Item', 'Value'], [
+    ['Rental rate', INR(inp.rent.rateValue) + ' per ' + (inp.rent.rateBasis === 'day' ? 'day' : inp.rent.rateBasis === 'week' ? 'week' : 'month')],
+    ['Monthly equivalent', INR(E.monthlyRentalRate(inp.rent)) + (inp.rent.rateBasis === 'day' ? '  (at ' + fx(inp.rent.daysPerMonth, 0) + ' billable days per month)' : '')],
+    ['Required hire period', (Math.round(inp.rent.durationMonths) > 0 ? fx(inp.rent.durationMonths, 0) + ' months (as entered)' : fx(Math.round(res.n * 12), 0) + ' months (follows the study period)')],
+    ['Minimum hire period', fx(inp.rent.minHireMonths, 0) + ' months'],
+    ['Mobilization + demobilization', INR(inp.rent.mobDemob) + ' each way'],
+    ['Rental escalation', pctf(inp.rent.escalationPct, 1) + ' per year'],
+    ['Overtime / excess-hour charge', INR(inp.rent.overtimePerMonth) + ' per month'],
+    ['Downtime / replacement allowance', pctf(inp.rent.downtimePct, 0) + ' of rental cost'],
+    ['Operator included', inp.rent.operatorIncluded ? 'Yes' : 'No'],
+    ['Fuel included', inp.rent.fuelIncluded ? 'Yes' : 'No'],
+    ['Renter-paid fuel / operator', INR(inp.rent.renterOperatingCostPerHour) + ' per productive hour']
+  ]);
+
+  sectionTitle('4', 'Economic formulas used');
+  var fLines = [
+    'Capital recovery factor      (A/P, i, n) = i(1+i)^n / [(1+i)^n - 1]',
+    'Sinking fund factor          (A/F, i, n) = i / [(1+i)^n - 1]',
+    'Single payment present worth (P/F, i, n) = (1+i)^-n',
+    'Equivalent monthly rate      i_m = (1 + i)^(1/12) - 1',
+    '',
+    'Buy:    PW_B = P + SUM[t=1..n] C_t/(1+i)^t - S/(1+i)^n',
+    '        EUAC_B = PW_B x (A/P, i, n)',
+    '',
+    'Lease:  PW_L = SUM over months of (payments and fees)/(1+i_m)^m',
+    '        EUAC_L = PW_L x (A/P, i, n)',
+    '',
+    'Rent:   PW_R = SUM over months of (hire and charges)/(1+i_m)^m',
+    '        EUAC_R = PW_R x (A/P, i, n)',
+    '',
+    'Decision rule: choose the alternative with the lowest EUAC over a common',
+    'analysis period, provided all alternatives deliver the same service.'
+  ];
+  doc.setFillColor(10, 28, 49);
+  ensure(200);
+  doc.rect(M, y, CW, 14 + fLines.length * 11.5, 'F');
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7.8);
+  doc.setTextColor(220, 231, 242);
+  var fy = y + 14;
+  fLines.forEach(function (l) { doc.text(l, M + 10, fy); fy += 11.5; });
+  y = fy + 12;
+
+  para('With the inputs of this study the factors evaluate to:', { size: 9, gap: 6 });
+  table(['Factor', 'Expression', 'Value'], [
+    ['(A/P, i, n)', 'i(1+i)^n / [(1+i)^n - 1] with i = ' + pctf(res.i * 100, 2) + ', n = ' + fx(res.n, 2), kfactor(res.factor, 6)],
+    ['(A/F, i, n)', 'i / [(1+i)^n - 1]', kfactor(E.af(res.i, res.n), 6)],
+    ['(P/F, i, n)', '(1+i)^-n', kfactor(E.pfv(res.i, res.n), 6)],
+    ['i_m', '(1 + i)^(1/12) - 1', kfactor(E.periodRate(res.i, 12) * 100, 4) + '% per month']
+  ]);
+
+  para('Note on the two buy formulations. The textbook form EUAC_B = P(A/P,i,n) - S(A/F,i,n) + SUM C_t(P/F,i,t)(A/P,i,n) ' +
+    'is algebraically equivalent to discounting the whole ownership stream and annualising once. This report uses the ' +
+    'second form, EUAC_B = PW_B x (A/P, i, n), because it places each year\'s maintenance at its correct time when ' +
+    'maintenance escalates, and it extends without special cases to partial years, replacement cycles and after-tax shields.', { gap: 8 });
+
+  para('No double counting. When financing is modelled through owner cash flows, the down payment and loan repayments ' +
+    'replace the purchase price - the price is never charged as well as the repayments. At a loan rate equal to the ' +
+    'discount rate the two approaches produce an identical present worth, which is the test applied to this engine.', { gap: 8 });
+
+  sectionTitle('5', 'Annual cash-flow tables');
+  ['buy', 'lease', 'rent'].forEach(function (k) {
+    var alt = res[k];
+    ensure(90);
+    para(ALTNAME(k) + ' \u2014 annual equivalent of the underlying ' + (alt.granularity === 'monthly' ? 'monthly' : 'annual') + ' cash flows', { bold: true, size: 9.5, gap: 4 });
+    var rows = alt.table;
+    var body = rows.slice(0, 13).map(function (r) {
+      return [
+        r.year === 0 ? '0' : String(r.year),
+        INR(r.capital), INR(r.maint), INR(r.oper), INR(r.own),
+        INR(r.lease), INR(r.other), r.salvage ? INR(r.salvage) : '-',
+        INR(r.total), INR(r.discounted), INR(r.cumDiscounted)
+      ];
+    });
+    body.push(['PW', '', '', '', '', '', '', '', '', INR(alt.pw), '']);
+    body.push(['EUAC', '', '', '', '', '', '', '', INR(alt.euac) + ' /yr', '', '']);
+    table(['Yr', 'Capital', 'Maint.', 'Fuel/op', 'Own.', 'Lease/rent', 'Other', 'Salvage', 'Net flow', 'Discounted', 'Cumulative'], body, {
+      cols: { 0: { fontStyle: 'bold', halign: 'center' } }
+    });
+    if (rows.length > 13) para('Years 14 to ' + (rows.length - 1) + ' omitted for length; the present worth above includes every year.', { size: 7.6, color: DIM, gap: 6 });
+  });
+
+  sectionTitle('6', 'Present worth and EUAC computation');
+  table(['Line', 'Buy', 'Lease', 'Rent'], [
+    ['Present worth of capital / capital recovery', INR(res.buy.pwParts.capital), '-', '-'],
+    ['Present worth of maintenance', INR(res.buy.pwParts.maint), INR(res.lease.pwParts.maint), INR(res.rent.pwParts.maint)],
+    ['Present worth of fuel and operator', INR(res.buy.pwParts.oper), INR(res.lease.pwParts.oper), INR(res.rent.pwParts.oper)],
+    ['Present worth of insurance and ownership', INR(res.buy.pwParts.own), INR(res.lease.pwParts.own), INR(res.rent.pwParts.own)],
+    ['Present worth of lease / rental payments', '-', INR(res.lease.pwParts.lease), INR(res.rent.pwParts.lease)],
+    ['Present worth of other items', INR(res.buy.pwParts.other), INR(res.lease.pwParts.other), INR(res.rent.pwParts.other)],
+    ['Less: present worth of salvage', INR(res.buy.pwParts.salvage), '-', '-'],
+    ['Total present worth of cost', INR(res.buy.pw), INR(res.lease.pw), INR(res.rent.pw)],
+    ['Multiply by (A/P, i, n)', kfactor(res.factor), kfactor(res.factor), kfactor(res.factor)],
+    ['Equivalent uniform annual cost', INR(res.buy.euac), INR(res.lease.euac), INR(res.rent.euac)],
+    ['Cost per productive hour', INR(res.buy.costPerHour), INR(res.lease.costPerHour), INR(res.rent.costPerHour)],
+    ['Rank', String(res.ranking.indexOf('buy') + 1), String(res.ranking.indexOf('lease') + 1), String(res.ranking.indexOf('rent') + 1)]
+  ], { cols: { 0: { fontStyle: 'bold' } } });
+
+  sectionTitle('7', 'Charts');
+
+  /* Charts are re-rendered offscreen at report time so the images are always
+     current, regardless of which screen was open when the PDF was requested. */
+  function chartImage(cfg, w, h) {
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    var opts = Object.assign({}, cfg.options, {
+      responsive: false, animation: false, maintainAspectRatio: false, devicePixelRatio: 1
+    });
+    var c = new window.Chart(canvas.getContext('2d'), { type: cfg.type, data: cfg.data, options: opts });
+    /* flatten onto white so the JPEG has no black transparency */
+    var flat = document.createElement('canvas');
+    flat.width = w; flat.height = h;
+    var fctx = flat.getContext('2d');
+    fctx.fillStyle = '#ffffff';
+    fctx.fillRect(0, 0, w, h);
+    fctx.drawImage(canvas, 0, 0);
+    var url = flat.toDataURL('image/jpeg', 0.92);
+    c.destroy();
+    return url;
+  }
+
+  var charts = [
+    { cfg: euacBarConfig(res), cap: 'Chart 1 - Equivalent uniform annual cost by alternative' },
+    { cfg: stackedConfig(res), cap: 'Chart 2 - Annual cost breakdown (each bar sums to the EUAC)' },
+    { cfg: cumulativeConfig(res), cap: 'Chart 3 - Cumulative discounted cost over the study period' },
+    { cfg: durationConfig(be), cap: 'Chart 4 - EUAC against study period (break-even)' },
+    { cfg: sweepConfig(state.rateSweep, 'Discount rate (% per year)', function (x) { return x + '%'; }), cap: 'Chart 5 - EUAC against discount rate' }
+  ];
+  charts.forEach(function (c) {
+    ensure(250);
+    para(c.cap, { size: 8.5, bold: true, color: DIM, gap: 4 });
+    try {
+      doc.addImage(chartImage(c.cfg, 1100, 460), 'JPEG', M, y, CW, CW * 0.418);
+      y += CW * 0.418 + 14;
+    } catch (e) { para('(chart image unavailable)', { size: 8, color: DIM }); }
+  });
+
+  sectionTitle('8', 'Break-even and sensitivity findings');
+  var segs = [];
+  be.winners.forEach(function (w, i) {
+    var last = segs[segs.length - 1];
+    if (last && last.k === w) last.to = be.years[i];
+    else segs.push({ k: w, from: be.years[i], to: be.years[i] });
+  });
+  para('Break-even (EUAC against study period).', { bold: true, size: 9.5, gap: 4 });
+  var cr = be.crossings;
+  var crLines = [];
+  [['buy-rent', 'Buy vs Rent'], ['buy-lease', 'Buy vs Lease'], ['lease-rent', 'Lease vs Rent']].forEach(function (p) {
+    var v = cr[p[0]];
+    crLines.push([p[1], v.length ? fx(v[0], 2) + ' years' : 'No crossover in 0.5-15 years']);
+  });
+  table(['Pair compared', 'Break-even study period'], crLines);
+  para('Over the 0.5 to 15 year range tested: ' + beNarrative(segs), { gap: 8 });
+
+  para('Sensitivity.', { bold: true, size: 9.5, gap: 4 });
+  var sensRows = [
+    ['Discount rate', pctf(res.i * 100, 1), 'Recomputed in Chart 5 of the application'],
+    ['Study period', fx(res.n, 1) + ' yr', 'See break-even table above'],
+    ['Purchase price', INR(inp.buy.price), 'Largest single driver of the buy EUAC'],
+    ['Rental rate', INR(inp.rent.rateValue) + '/month', 'Directly proportional to the rent EUAC'],
+    ['Lease payment', INR(inp.lease.payment) + '/month', 'Directly proportional to the lease EUAC'],
+    ['Maintenance, year 1', INR(inp.buy.maintenanceYear1), 'Escalating at ' + pctf(inp.buy.maintenanceEscalationPct, 0)],
+    ['Residual value', INR(inp.buy.resaleValue), 'A credit at the end of the period'],
+    ['Utilization', pctf(inp.project.utilizationPct, 0), 'Moves per-hour cost, not annual cost, unless fuel differs']
+  ];
+  table(['Variable', 'Base value', 'Effect on the comparison'], sensRows);
+  para('A \u00b125% move in each of the above was tested in the application. Where the preferred alternative changes inside the tested band, the recommendation is sensitive to that variable and should be re-checked with a firm quotation before commitment.', { gap: 8 });
+
+  sectionTitle('9', 'Recommendation and economic justification');
+  para('On the assumptions recorded in Section 3, ' + ALTNAME(res.best) + ' is the recommended acquisition route for the ' +
+    eq.name.toLowerCase() + ' over a ' + fx(res.n, 2) + '-year study period.', { bold: true, gap: 6 });
+  para(bestReason(res, inp), { gap: 6 });
+  para('The comparison is made at an equivalent annual cost of ' + INR(res.bestEuac) + ' for ' + ALTNAME(res.best) +
+    ' against ' + INR(res[res.secondBest].euac) + ' for ' + ALTNAME(res.secondBest) + ' and ' + INR(res[res.worst].euac) +
+    ' for ' + ALTNAME(res.worst) + '. The annual saving of ' + INR(res.savings) + ' (' + pctf(res.savingsPct) +
+    ') compounds to a present-worth advantage of ' + INR(res[res.worst].pw - res[res.best].pw) + ' over the period. ' +
+    'Because all three alternatives are reduced to the same annual basis over the same study period, the comparison ' +
+    'is valid even though the underlying cash flows occur at very different times and in very different patterns.', { gap: 6 });
+  para('Per productive hour, the cost is ' + INR(res[res.best].costPerHour) + ' for ' + ALTNAME(res.best) + ', based on ' +
+    Math.round(res.hours) + ' productive hours a year at ' + pctf(inp.project.utilizationPct, 0) + ' utilization. This is the ' +
+    'figure to quote against the machine rate built into the project estimate.', { gap: 8 });
+
+  sectionTitle('10', 'Limitations and disclaimer');
+  var lim = [
+    'All equipment prices, rentals and lease rates are illustrative study values, not market quotations. Replacing them with vendor quotations will change the absolute EUACs, though usually not the ranking.',
+    'The analysis is a cost comparison only. It assumes all three routes deliver equal capacity (' + eq.capacity + '), availability and condition. If a rental cannot guarantee the same service, the comparison is not like-for-like.',
+    'Costs common to all three alternatives - site fuel where included in every rate, operator wages, general overheads - are excluded because they cannot change the ranking.',
+    'GST, working-capital effects and financing fees other than the stated interest rate are outside the model. Interest deductibility is ignored in the after-tax case.',
+    'The result is only as good as the assumptions entered. The sensitivity analysis identifies which assumptions matter most; those are the ones to verify first.',
+    'This report is an academic exercise in engineering economics, not professional financial or legal advice.'
+  ];
+  lim.forEach(function (l, i) { para((i + 1) + '.  ' + l, { size: 8.6, gap: 4 }); });
+
+  /* page numbers */
+  var total = doc.internal.getNumberOfPages();
+  for (var p = 2; p <= total; p++) {
+    doc.setPage(p);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(150, 162, 175);
+    doc.text(asc('EquipWise  -  ' + (inp.project.name || 'Equipment acquisition analysis')), M, H - 26);
+    doc.text('Page ' + p + ' of ' + total, W - M, H - 26, { align: 'right' });
+  }
+
+  doc.save('EquipWise-EUAC-Report-' + (inp.project.name || 'analysis').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '') + '.pdf');
+}
+
+/* ------------------------------------------------------------------ app */
+var LS_SCN = 'equipwise.scenarios.v1';
+var LS_META = 'equipwise.meta.v1';
+var LS_EQ = 'equipwise.equipment.v1';
+
+function loadScn() {
+  try { return JSON.parse(localStorage.getItem(LS_SCN)) || []; } catch (e) { return []; }
+}
+function persistScn(list) {
+  try { localStorage.setItem(LS_SCN, JSON.stringify(list.slice(0, 12))); } catch (e) { }
+}
+function loadEquip() {
+  try {
+    var l = JSON.parse(localStorage.getItem(LS_EQ));
+    return Array.isArray(l) ? l.filter(function (x) { return x && x.id && x.name; }) : [];
+  } catch (e) { return []; }
+}
+function persistEquip(list) {
+  try { localStorage.setItem(LS_EQ, JSON.stringify(list)); } catch (e) { }
+}
+function loadMeta() {
+  try {
+    var m = JSON.parse(localStorage.getItem(LS_META));
+    return m && typeof m === 'object' ? m : { student: '', roll: '', course: 'Construction Economics and Finance', inst: '' };
+  } catch (e) { return { student: '', roll: '', course: 'Construction Economics and Finance', inst: '' }; }
+}
+
+var TABS = [
+  { v: 'dashboard', t: 'Dashboard' },
+  { v: 'inputs', t: 'Inputs' },
+  { v: 'results', t: 'Results' },
+  { v: 'breakeven', t: 'Break-even' },
+  { v: 'sensitivity', t: 'Sensitivity' },
+  { v: 'report', t: 'Report' }
+];
+
+function App() {
+  var st = useState(E.defaultInputs('excavator'));
+  var inputs = st[0], setInputs = st[1];
+  var tabSt = useState('dashboard'); var tab = tabSt[0], setTab = tabSt[1];
+  var scnSt = useState(loadScn); var scns = scnSt[0], setScns = scnSt[1];
+  var metaSt = useState(loadMeta); var meta = metaSt[0], setMeta = metaSt[1];
+  var toastSt = useState(null); var toast = toastSt[0], setToast = toastSt[1];
+  var linkSt = useState(true); var linkPeriod = linkSt[0], setLinkPeriod = linkSt[1];
+  var eqSt = useState(function () { var l = loadEquip(); E.setCustomEquipment(l); return l; });
+  var customs = eqSt[0], setCustoms = eqSt[1];
+  var editSt = useState(null); var eqEditing = editSt[0], setEqEditing = editSt[1];
+
+  useEffect(function () {
+    if (!toast) return;
+    var id = setTimeout(function () { setToast(null); }, 2600);
+    return function () { clearTimeout(id); };
+  }, [toast]);
+
+  useEffect(function () {
+    try { localStorage.setItem(LS_META, JSON.stringify(meta)); } catch (e) { }
+  }, [meta]);
+
+  var update = function (path, val) {
+    setInputs(function (prev) {
+      var c = E.deepClone(prev);
+      E.setPath(c, path, val);
+      return c;
+    });
+  };
+
+  var setDuration = function (val, unit) {
+    setInputs(function (prev) {
+      var c = E.deepClone(prev);
+      var v = val === '' ? 0 : val;
+      c.project.durationValue = v;
+      c.project.durationUnit = unit;
+      c.project.durationMonths = unit === 'months' ? v : v * 12;
+      if (linkPeriod) c.project.analysisYears = Math.max(1 / 12, +(c.project.durationMonths / 12).toFixed(4));
+      return c;
+    });
+  };
+
+  var setAnalysisYears = function (v) {
+    setInputs(function (prev) {
+      var c = E.deepClone(prev);
+      c.project.analysisYears = v;
+      var implied = Math.round(v * 12 * 100) / 100;
+      if (Math.abs(implied - prev.project.durationMonths) > 0.01) setLinkPeriod(false);
+      return c;
+    });
+  };
+
+  var pickEquipment = function (id) {
+    setInputs(function (prev) {
+      var d = E.defaultInputs(id);
+      var c = E.deepClone(prev);
+      c.project.equipmentId = id;
+      c.project.hoursPerYear = d.project.hoursPerYear;
+      c.project.minCapacity = d.project.minCapacity;
+      c.buy = d.buy;
+      c.lease = d.lease;
+      c.rent = d.rent;
+      return c;
+    });
+    setToast('Loaded illustrative cost structure for ' + E.equipmentById(id).name);
+  };
+
+  var resetDefaults = function () {
+    setInputs(E.defaultInputs(inputs.project.equipmentId));
+    setLinkPeriod(true);
+    setToast('Inputs reset to the illustrative sample');
+  };
+
+  var results = useMemo(function () { return E.evaluate(inputs); }, [inputs]);
+  var validation = useMemo(function () { return E.validate(inputs); }, [inputs]);
+  var be = useMemo(function () { return E.breakEven(E.deepClone(inputs), { maxYears: 15, step: 0.5 }); }, [inputs]);
+  var rateSweep = useMemo(function () {
+    return E.sweep(inputs, 'econ.discountRate', [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]);
+  }, [inputs]);
+  var utilSweep = useMemo(function () {
+    return E.sweep(inputs, 'project.utilizationPct', [20, 30, 40, 50, 60, 70, 80, 90, 100]);
+  }, [inputs]);
+
+  var saveScenario = function () {
+    var s = {
+      id: Date.now(),
+      name: inputs.project.name || 'Untitled scenario',
+      equipment: E.equipmentById(inputs.project.equipmentId).name,
+      duration: fx(results.n, 2) + ' yr',
+      best: results.best,
+      euac: results.bestEuac,
+      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      inputs: E.deepClone(inputs)
+    };
+    var list = [s].concat(scns).slice(0, 12);
+    setScns(list); persistScn(list);
+    setToast('Scenario saved to this browser');
+  };
+  var loadScenario = function (s) {
+    setInputs(E.deepClone(s.inputs));
+    setLinkPeriod(false);
+    setTab('results');
+    setToast('Loaded "' + s.name + '"');
+  };
+  var deleteScenario = function (id) {
+    var list = scns.filter(function (x) { return x.id !== id; });
+    setScns(list); persistScn(list);
+  };
+
+  /* ---------------- user equipment library ---------------- */
+  var commitEquip = function (list) {
+    setCustoms(list);
+    E.setCustomEquipment(list);
+    persistEquip(list);
+  };
+
+  var saveEquipment = function (rec) {
+    var list = customs.slice(), idx = -1;
+    for (var k = 0; k < list.length; k++) if (list[k].id === rec.id) { idx = k; break; }
+    var isNew = idx < 0;
+    if (isNew) list.push(rec); else list[idx] = rec;
+    commitEquip(list);
+    setEqEditing(null);
+    pickEquipment(rec.id);
+    setToast(isNew ? 'Added "' + rec.name + '" and loaded it into the analysis'
+                  : 'Updated "' + rec.name + '"');
+  };
+
+  var deleteEquipment = function (rec) {
+    if (!rec) return;
+    var go = window.confirm('Remove "' + rec.name + '" from your equipment library?\n\nSaved scenarios keep their own copy of the inputs, so they are not affected.');
+    if (!go) return;
+    var list = customs.filter(function (x) { return x.id !== rec.id; });
+    commitEquip(list);
+    setEqEditing(null);
+    if (inputs.project.equipmentId === rec.id) pickEquipment('excavator');
+    setToast('Removed from your equipment library');
+  };
+
+  var body = null;
+  if (tab === 'dashboard') {
+    body = html`<${Dashboard} inputs=${inputs} results=${results} scns=${scns} go=${setTab}
+      pickEquipment=${pickEquipment} loadScenario=${loadScenario} deleteScenario=${deleteScenario}
+      editing=${eqEditing}
+      onNew=${function () { setEqEditing({ mode: 'new' }); }}
+      onEdit=${function (q) { setEqEditing({ mode: 'edit', record: q }); }}
+      onDelete=${deleteEquipment}
+      onSave=${saveEquipment}
+      onCancel=${function () { setEqEditing(null); }} />`;
+  } else if (tab === 'inputs') {
+    body = html`<${InputsPage} inputs=${inputs} update=${update} results=${results} validation=${validation}
+      setDuration=${setDuration} setAnalysisYears=${setAnalysisYears} pickEquipment=${pickEquipment}
+      resetDefaults=${resetDefaults} go=${setTab} />`;
+  } else if (tab === 'results') {
+    body = html`<${ResultsPage} inputs=${inputs} results=${results} validation=${validation} be=${be}
+      rateSweep=${rateSweep} utilSweep=${utilSweep} go=${setTab} saveScenario=${saveScenario} />`;
+  } else if (tab === 'breakeven') {
+    body = html`<${BreakEvenPage} inputs=${inputs} results=${results} be=${be} go=${setTab} />`;
+  } else if (tab === 'sensitivity') {
+    body = html`<${SensitivityPage} inputs=${inputs} results=${results} go=${setTab} />`;
+  } else {
+    body = html`<${ReportPage} inputs=${inputs} results=${results} validation=${validation} meta=${meta}
+      setMeta=${setMeta} go=${setTab}
+      makePDF=${function () { makePDF({ inputs: inputs, results: results, be: be, meta: meta, rateSweep: rateSweep }); setToast('PDF report generated'); }} />`;
+  }
+
+  return html`<div>
+    <header className="topbar">
+      <div className="topbar__inner">
+        <a className="brand" href="#" onClick=${function (e) { e.preventDefault(); setTab('dashboard'); }}>
+          <svg className="brand__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect x="1" y="1" width="30" height="30" rx="7" fill="#143454" stroke="#2A5478" strokeWidth="1"/>
+            <path d="M8 23V13l8-5 8 5v10" stroke="#E8A317" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 23v-5h8v5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8 13h16" stroke="#fff" strokeWidth="1.2" strokeOpacity=".45"/>
+          </svg>
+          <div>
+            <div className="brand__name">Equip<span>Wise</span></div>
+            <div className="brand__sub">EUAC Decision Support</div>
+          </div>
+        </a>
+        <nav className="nav">
+          ${TABS.map(function (t) {
+            return html`<button key=${t.v} className=${tab === t.v ? 'on' : ''} onClick=${function () { setTab(t.v); }}>${t.t}</button>`;
+          })}
+        </nav>
+        <span className="topbar__chip">\u20b9 INR</span>
+      </div>
+    </header>
+
+    ${body}
+
+    <footer className="footer">
+      <div className="wrap" style=${{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+        <div><b>EquipWise</b> \u00b7 Equivalent Uniform Annual Cost analysis for construction equipment acquisition</div>
+        <div>Cost analysis only \u00b7 all values in INR \u00b7 illustrative assumptions, not market quotations</div>
+      </div>
+    </footer>
+
+    ${toast ? html`<div className="toast">${toast}</div>` : null}
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App} />`);
+
+</script>
+</body>
+</html>
